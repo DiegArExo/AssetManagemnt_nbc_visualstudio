@@ -34,6 +34,50 @@ namespace ITAssetManagement.Controllers
 
             return Ok(loaned_laptops);
         }
+        [HttpGet]
+        [Route("api/loaned_laptops_with_users_and_laptops")]
+        public IHttpActionResult GetLoanedLaptopsWithUsersAndLaptops(int loaned_laptop_id)
+        {
+            try
+            {
+                var result = from laptop in db.laptops
+                                 // Left join to assigned_laptops to get user and assigned laptop data if exists
+                             join loaned in db.loaned_laptops
+
+                             on laptop.id equals loaned.loaned_laptop_id into loanedLaptopJoin
+                             from loanedLaptop in loanedLaptopJoin.DefaultIfEmpty()
+
+                                 // Left join to users to get user data if assigned
+                             join user in db.users
+
+                             on loanedLaptop.user_loaned_id equals user.id into userJoin
+                             from userData in userJoin.DefaultIfEmpty()
+
+                                 // Filter by laptop_id
+                             where laptop.id == loaned_laptop_id
+                             select new
+                             {
+                                 Loaned_Laptop = laptop,
+                                 AssignedUser = (loanedLaptop != null) ? new { userData.fullname, userData.id, userData.username, userData.email } : null, // Anonymous type for assigned user
+                                 IsAssigned = (loanedLaptop != null)
+                             };
+
+                // Retrieve the single result or null if not found
+                var laptopDetails = result.FirstOrDefault();
+
+                if (laptopDetails == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(laptopDetails);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
 
         // PUT: api/loaned_laptops/5
         [ResponseType(typeof(void))]
@@ -79,27 +123,92 @@ namespace ITAssetManagement.Controllers
             {
                 return BadRequest(ModelState);
             }
+            using (var transaction = db.Database.BeginTransaction())
+            {
 
-            db.loaned_laptops.Add(loaned_laptops);
-            db.SaveChanges();
+                try
+                {
+                    loaned_laptops.date_created = DateTime.Now;
+                    //change to authenticated user
+                    loaned_laptops.user_created = 1;
 
-            return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
+                    // Check if loan_description is null or empty and set it to null if true
+                    if (string.IsNullOrWhiteSpace(loaned_laptops.descriptions))
+                    {
+                        loaned_laptops.descriptions = null;
+                    }
+
+
+                    db.loaned_laptops.Add(loaned_laptops);
+                    db.SaveChanges();
+
+                    // Update the laptop status to 2. which means Assigned
+                    var laptop = db.laptops.Find(loaned_laptops.loaned_laptop_id);
+                    if (laptop != null)
+                    {
+
+                        laptop.device_status_id = 3;
+                        db.SaveChanges();
+                    }
+
+                    // Commiting a transaction this means that all transactions are made succefully made.
+                    transaction.Commit();
+
+
+                    return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
+                }
+                catch (Exception ex)
+                {
+                    // Rollback The transaction if something goes wrong
+                    transaction.Rollback();
+                    return InternalServerError(ex);
+                }
+            }
         }
 
         // DELETE: api/loaned_laptops/5
         [ResponseType(typeof(loaned_laptops))]
-        public IHttpActionResult Deleteloaned_laptops(int id)
+        [HttpDelete]
+        [Route("api/loaned_laptops/unloan_user")]
+        public IHttpActionResult Deleteloaned_laptops(int laptop_loaned_id)
         {
-            loaned_laptops loaned_laptops = db.loaned_laptops.Find(id);
+            //Getting the value by Id
+            var loaned_laptops = db.loaned_laptops.Where(a => a.loaned_laptop_id == laptop_loaned_id).ToList();
             if (loaned_laptops == null)
             {
                 return NotFound();
             }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                //Try and catch will help with error handing and avoidin the code from crahing. 
+                try
+                {
+                    // Update device_status_id in laptops table
+                    var laptopsToUpdate = db.laptops.Where(l => l.id == laptop_loaned_id).ToList();
 
-            db.loaned_laptops.Remove(loaned_laptops);
-            db.SaveChanges();
+                    foreach (var laptop in laptopsToUpdate)
+                    {
+                        laptop.device_status_id = 1;
+                        db.Entry(laptop).State = EntityState.Modified;
+                    }
+                    // Save The change in the Laptop table
+                    db.SaveChanges();
 
-            return Ok(loaned_laptops);
+                    //Delete the record from the database
+                    db.loaned_laptops.RemoveRange(loaned_laptops);
+                    // Save all the changes after deleting
+                    db.SaveChanges();
+
+                    // Commit the transaction to ensure that all the Operarions  worked
+                    transaction.Commit();
+
+                    return Ok(loaned_laptops);
+                }
+                catch (Exception ex)
+                {
+                    return InternalServerError(ex);
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)

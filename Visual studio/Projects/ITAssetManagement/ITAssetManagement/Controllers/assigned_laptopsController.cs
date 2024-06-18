@@ -34,6 +34,50 @@ namespace ITAssetManagement.Controllers
 
             return Ok(assigned_laptops);
         }
+        //GET FUNTION -- This one gets all the laptops and the users assocciated witht the laptops.
+        [HttpGet]
+        [Route("api/assigned_laptops_with_users_and_laptops")]
+        public IHttpActionResult GetAssignedLaptopsWithUsersAndLaptops(int assigned_laptop_id)
+        {
+            try
+            {
+                var result = from laptop in db.laptops
+                                 // Left join to assigned_laptops to get user and assigned laptop data if exists
+                             join assigned in db.assigned_laptops
+
+                             on laptop.id equals assigned.laptop_id into assignedLaptopJoin
+                             from assignedLaptop in assignedLaptopJoin.DefaultIfEmpty()
+
+                                 // Left join to users to get user data if assigned
+                             join user in db.users
+
+                             on assignedLaptop.user_assigned_id equals user.id into userJoin
+                             from userData in userJoin.DefaultIfEmpty()
+
+                                 // Filter by laptop_id
+                             where laptop.id == assigned_laptop_id
+                             select new
+                             {
+                                 Assigned_Laptop = laptop,
+                                 AssignedUser = (assignedLaptop != null) ? new { userData.fullname, userData.id, userData.username, userData.email } : null, // Anonymous type for assigned user
+                                 IsAssigned = (assignedLaptop != null)
+                             };
+
+                // Retrieve the single result or null if not found
+                var laptopDetails = result.FirstOrDefault();
+
+                if (laptopDetails == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(laptopDetails);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
 
         // PUT: api/assigned_laptops/5
         [ResponseType(typeof(void))]
@@ -79,27 +123,91 @@ namespace ITAssetManagement.Controllers
             {
                 return BadRequest(ModelState);
             }
+            //Transaction Ensures that both Operation work togther or fail togther.
+            //It prevents a situation where by assign is inserted but update is not done
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                   
+                    assigned_laptops.date_created = DateTime.Now; //This is how you Insert the date from the API side
+                    assigned_laptops.user_created = 1; // Replace with the authenticated user ID
 
-            db.assigned_laptops.Add(assigned_laptops);
-            db.SaveChanges();
+                   
+                    db.assigned_laptops.Add(assigned_laptops); //Save the recore
+                    db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+                    // Update the laptop status to 2. which means Assigned
+                    var laptop = db.laptops.Find(assigned_laptops.laptop_id);
+
+                    if (laptop != null)
+                    {
+                        
+                        laptop.device_status_id = 2;
+                        db.SaveChanges();
+                    }
+
+                    // Commiting a transaction this means that all transactions are made succefully made.
+                    transaction.Commit();
+
+                    return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction if something goes wrong
+                    transaction.Rollback();
+                    return InternalServerError(ex);
+                }
+            }
         }
 
-        // DELETE: api/assigned_laptops/5
+
+        // DELETE: api/ussigned_laptops/unassign_use/
         [ResponseType(typeof(assigned_laptops))]
-        public IHttpActionResult Deleteassigned_laptops(int id)
+        [HttpDelete]
+        [Route("api/ussigned_laptops/unassign_user")]
+        public IHttpActionResult Unassigned_laptops(int un_assign_laptop_id)
         {
-            assigned_laptops assigned_laptops = db.assigned_laptops.Find(id);
-            if (assigned_laptops == null)
+
+            // Check if any assigned laptops exist
+            var assignedLaptops = db.assigned_laptops.Where(a => a.laptop_id == un_assign_laptop_id).ToList();
+            if (!assignedLaptops.Any())
             {
                 return NotFound();
             }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    // Update device_status_id in laptops table
+                    var laptopsToUpdate = db.laptops.Where(l => l.id == un_assign_laptop_id).ToList();
 
-            db.assigned_laptops.Remove(assigned_laptops);
-            db.SaveChanges();
+                    foreach (var laptop in laptopsToUpdate)
+                    {
+                        laptop.device_status_id = 1;
+                        db.Entry(laptop).State = EntityState.Modified;
+                    }
+                    // Save The change in the Laptop table
+                    db.SaveChanges();
 
-            return Ok(assigned_laptops);
+                    // This code will remove the data from the database (Delete the record)
+                    db.assigned_laptops.RemoveRange(assignedLaptops);
+
+                    // Save all the changes after deleting
+                    db.SaveChanges();
+
+                    // Commit the transaction to ensure that all the Operarions  worked
+                    transaction.Commit();
+
+                    return Ok(assignedLaptops);
+                }
+                catch (Exception ex)
+                {
+                    // Incase the Transaction has failed Rollback the changes
+                    transaction.Rollback();
+                    return InternalServerError(ex);
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)

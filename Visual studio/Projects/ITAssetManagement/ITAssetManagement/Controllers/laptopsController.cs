@@ -21,85 +21,95 @@ namespace ITAssetManagement.Controllers
 {
     public class laptopsController : ApiController
     {
-        private ITAssetManagementDB db = new ITAssetManagementDB();
+        private ITAssetManagementDB db = new ITAssetManagementDB(); 
 
         // GET: api/laptops
         public IQueryable<laptop> Getlaptops()
         {
             return db.laptops;
         }
-        /*(Loanable laptopes type is 1 and non-loanable is 0)
-        API EndPoint to get all non loanable laptops*/
-       // [ResponseType(typeof(laptop))]
-        //[HttpGet]
-       // [Route("api/laptops/nonloanlaptop")]
-       // public IHttpActionResult Getnonloanablelaptop()
-       // {
-            //var non_loanable_laptop = db.laptops.Where(l => l.type == false ).ToList();
-            ////Conditional statement to chack for availability
-            ////Any() is a LINQ method that returns true if the collection contains any elements, and false if it is empty.
-            //if (non_loanable_laptop == null || !non_loanable_laptop.Any())
-            //{
-            //    return NotFound();
-            //}else
-            //{
-            //    return Ok(non_loanable_laptop);
-            //}
-            /* var non_loanable_laptop = from l_laptop in db.laptops
-                                       join d_device_status in db.device_status
-                                       on l_laptop.device_status_id equals d_device_status.id
-                                      // where l_laptop.type == false
+       // (Loanable laptopes type is 1 and non-loanable is 0)
+       // API EndPoint to get all non loanable laptops. this are laptops that they can loan out to anyone*/
+       [ResponseType(typeof(laptop))]
+        [HttpGet]
+       [Route("api/laptops/get_non_loanable_laptops")]
+        public IHttpActionResult Getnonloanablelaptop()
+        {
+            // Fetch non-loanable laptops from the database
+            var non_loanable_laptop = db.laptops.Where(getType => getType.type == "0").ToList();
 
-                                       select new
-                                       {
-                                           l_laptop, // This code will get all the laptops
-                                           statusName = d_device_status.name // This code will get status only
-                                       };
-             return Ok(non_loanable_laptop);*/
-           
+            // Check if the fetched list is null or empty
+            if (non_loanable_laptop == null || !non_loanable_laptop.Any())
+            {
+                return NotFound(); // Return 404 if no non-loanable laptops are found
+            }
 
-       // }
+            // Fetch non-loanable laptops along with their status from the database
+            var non_loanable_laptop_with_status = from l_laptop in db.laptops
+                                                  join d_device_status in db.device_status
+                                                  on l_laptop.device_status_id equals d_device_status.id
+                                                  where l_laptop.type == "0"
+                                                  select new
+                                                  {
+                                                      Laptop = l_laptop, // Get all laptop details
+                                                      noLoanable_StatusName = d_device_status.name // Get the status name
+                                                  };
 
-       // [ResponseType(typeof(laptop))]
-        //[HttpGet]
-       // [Route("api/laptops/loanlaptop")]
-       // public IHttpActionResult Getloanablelaptop()
-       // {
-            //var non_loanable_laptop = db.laptops.Where(l => l.type == true).ToList();
-            ////Conditional statement to chack for availability
-            ////Any() is a LINQ method that returns true if the collection contains any elements, and false if it is empty.
-            //if (non_loanable_laptop == null || !non_loanable_laptop.Any())
-            //{
-            //    return NotFound();
-            //}
-            //else
-            //{
-            //    return Ok(non_loanable_laptop);
-            //}
-          /*  var loanable_laptop = from loan_laptop in db.laptops
-                                      join d_device_status in db.device_status
-                                      on loan_laptop.device_status_id equals d_device_status.id
-                                      //where loan_laptop.type == false
-
-                                      select new
-                                      {
-                                          loan_laptop, // This code will get all the laptops
-                                          statusName_ = d_device_status.name // This code will get status only
-                                      };
-            return Ok(loanable_laptop);
+            // Return the result with the status included
+            return Ok(non_loanable_laptop_with_status);
         }
-        */
+
+        [ResponseType(typeof(laptop))]
+        [HttpGet]
+         [Route("api/laptops/get_loanable_laptops")]
+        public IHttpActionResult Getloanablelaptop()
+        {
+            // Fetch non-loanable laptops from the database where type is "0"
+            var non_loanable_laptop = db.laptops.Where(l => l.type == "1").ToList();
+
+            // Check if the fetched list is null or empty
+            if (non_loanable_laptop == null || !non_loanable_laptop.Any())
+            {
+                return NotFound(); // Return 404 if no non-loanable laptops are found
+            }
+
+            // Fetch non-loanable laptops along with their status from the database
+            var loanable_laptop_with_status = from loan_laptop in db.laptops
+                                              join d_device_status in db.device_status
+                                              on loan_laptop.device_status_id equals d_device_status.id
+                                              where loan_laptop.type == "1"
+                                              select new
+                                              {
+                                                  LoanableLaptop = loan_laptop, // Get all laptop details
+                                                  Loanable_statusName = d_device_status.name // Get the status name
+                                              };
+
+            // Return the result with the status included
+            return Ok(loanable_laptop_with_status);
+        }
+
+
+
         // GET: api/laptops/5
         [ResponseType(typeof(laptop))]
-        public IHttpActionResult Getlaptop(int id)
+        public IHttpActionResult GetLaptopWithStatus(int id)
         {
-            laptop laptop = db.laptops.Find(id);
-            if (laptop == null)
+            var laptopWithStatus = (from laptop in db.laptops
+                                    join status in db.device_status on laptop.device_status_id equals status.id
+                                    where laptop.id == id
+                                    select new
+                                    {
+                                        Laptops = laptop,
+                           
+                                        status.name 
+                                    }).FirstOrDefault();
+
+            if (laptopWithStatus == null)
             {
                 return NotFound();
             }
 
-            return Ok(laptop);
+            return Ok(laptopWithStatus);
         }
 
         // PUT: api/laptops/5
@@ -111,12 +121,37 @@ namespace ITAssetManagement.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (id != laptop.id)
+            // Retrieve the existing entity from the database
+            var existingLaptops = db.laptops.Find(id);
+            if (existingLaptops == null)
             {
-                return BadRequest();
+                //return NotFound();
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+            }
+            //Defining Tableas that needs to be updated 
+            existingLaptops.brand_name = laptop.brand_name;
+            existingLaptops.model = laptop.model;
+            existingLaptops.serial_number = laptop.serial_number;
+            existingLaptops.tag_number = laptop.tag_number;
+
+            // Update type and status only if they are not null
+            if (laptop.type != null)
+            {
+                existingLaptops.type = laptop.type;
             }
 
-            db.Entry(laptop).State = EntityState.Modified;
+            if (laptop.device_status_id != null)
+            {
+                existingLaptops.device_status_id = laptop.device_status_id;
+            }
+
+           // existingLaptops.type = laptop.type;
+           // existingLaptops.device_status_id = laptop.device_status_id;
+
+            //Insert in the date updated
+            laptop.date_updated = DateTime.Now;
+
+            db.Entry(existingLaptops).State = EntityState.Modified;
 
             try
             {
@@ -133,7 +168,12 @@ namespace ITAssetManagement.Controllers
                     throw;
                 }
             }
-
+            catch (DbUpdateException ex)
+            {
+                // Log the inner exception
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
             //return StatusCode(HttpStatusCode.NoContent);
             return Ok(laptop);
         }
@@ -142,16 +182,34 @@ namespace ITAssetManagement.Controllers
         [ResponseType(typeof(laptop))]
         public IHttpActionResult Postlaptop(laptop laptop)
         {
+            // Check if the model state is valid
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.laptops.Add(laptop);
-            db.SaveChanges();
+            try
+            {
+                // Set the current timestamp for date_created
+                laptop.date_created = DateTime.Now;
 
-            return CreatedAtRoute("DefaultApi", new { id = laptop.id }, laptop);
+                // Add the new laptop to the database
+                db.laptops.Add(laptop);
+
+                // Save changes to the database
+                db.SaveChanges();
+
+                // Return OK response with the added laptop data
+                return Ok(laptop);
+            }
+            catch (Exception ex)
+            {
+
+                return InternalServerError(ex);
+            }
         }
+
+
 
         // DELETE: api/laptops/5
         [ResponseType(typeof(laptop))]

@@ -37,7 +37,7 @@ namespace ITAssetManagement.Models
         [StringLength(1)]
         public string type { get; set; }
 
-        public int device_status_id { get; set; }
+        public int? device_status_id { get; set; }
 
         public int user_assigned_id { get; set; }
 
@@ -45,7 +45,7 @@ namespace ITAssetManagement.Models
 
         public int? user_updated { get; set; }
 
-        public DateTime date_created { get; set; }
+        public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
 
