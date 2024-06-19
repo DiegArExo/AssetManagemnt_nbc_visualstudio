@@ -16,6 +16,8 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ITAssetManagement.Models;
+using Newtonsoft.Json;
+
 
 namespace ITAssetManagement.Controllers
 {
@@ -178,6 +180,70 @@ namespace ITAssetManagement.Controllers
             return Ok(laptop);
         }
 
+        //--------------------------------------------- PUT: api/users/5----------------------------------------------
+
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/laptops/write_off_laptops/{id}")]
+        public IHttpActionResult PutWriteOffLaptop(int id, laptop laptop)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Content(HttpStatusCode.BadRequest, ModelState);
+            }
+
+            if (id != laptop.id)
+            {
+                return BadRequest();
+            }
+
+            // Retrieve the existing entity from the database
+            var existingLaptop = db.laptops.Find(id);
+            if (existingLaptop == null)
+            {
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
+            }
+
+            // Preserve fields that should not be changed
+            laptop.date_created = existingLaptop.date_created;
+            laptop.type = existingLaptop.type;
+            laptop.device_status_id = existingLaptop.device_status_id;
+            laptop.user_assigned_id = existingLaptop.user_assigned_id;
+            laptop.user_created = existingLaptop.user_created;
+
+            // Always update the date_updated field
+            laptop.date_updated = DateTime.Now;
+
+            db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!laptopExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+            return Ok(existingLaptop); // Return the updated laptop data
+        }
+
         // POST: api/laptops
         [ResponseType(typeof(laptop))]
         public IHttpActionResult Postlaptop(laptop laptop)
@@ -207,7 +273,11 @@ namespace ITAssetManagement.Controllers
 
                 return InternalServerError(ex);
             }
+
+
         }
+
+       
 
 
 
