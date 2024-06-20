@@ -48,8 +48,10 @@ namespace ITAssetManagement.Controllers
 
             // Fetch non-loanable laptops along with their status from the database
             var non_loanable_laptop_with_status = from l_laptop in db.laptops
+
                                                   join d_device_status in db.device_status
                                                   on l_laptop.device_status_id equals d_device_status.id
+
                                                   where l_laptop.type == "0"
                                                   select new
                                                   {

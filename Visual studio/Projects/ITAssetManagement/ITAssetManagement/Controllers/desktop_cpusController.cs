@@ -35,6 +35,36 @@ namespace ITAssetManagement.Controllers
             return Ok(desktop_cpus);
         }
 
+        //------------------ GET CPU INFORMATION WITH STATUS NAME START ------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_monitors/get_cpus")]
+        public IHttpActionResult Getcpus()
+        {
+
+            // Fetch non-loanable laptops along with their status from the database
+            var get_cpu = from l_cpu in db.desktop_cpus
+
+                          join d_device_status in db.device_status
+                          on l_cpu.status_id equals d_device_status.id
+
+                          select new
+                          {
+                              l_cpu.id,
+                              l_cpu.brand_name,
+                              l_cpu.model,
+                              l_cpu.cpu_serial_number,
+                              l_cpu.cpu_tag_number,
+
+                              
+                              cpu_StatusName = d_device_status.name // Get the status name
+                          };
+
+            // Return the result with the status included
+            return Ok(get_cpu);
+        }
+        //------------------ GET MONITOR INFORMATION WITH STATUS NAME END ------------------------
+
         // PUT: api/desktop_cpus/5
         [ResponseType(typeof(void))]
         public IHttpActionResult Putdesktop_cpus(int id, desktop_cpus desktop_cpus)
@@ -85,7 +115,7 @@ namespace ITAssetManagement.Controllers
             return Ok(desktop_cpus);
         }
 
-        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR START)----------------------------------------------
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF CPU START)----------------------------------------------
 
         [ResponseType(typeof(void))]
         [HttpPut]
@@ -112,7 +142,7 @@ namespace ITAssetManagement.Controllers
             desktop_cpus.model = existingCPU.model;
             desktop_cpus.brand_name = existingCPU.brand_name;
             desktop_cpus.cpu_serial_number = existingCPU.cpu_serial_number;
-            desktop_cpus.cpu_tag_number = existingCPU.cpu_serial_number;
+            desktop_cpus.cpu_tag_number = existingCPU.cpu_tag_number;
             desktop_cpus.user_created = existingCPU.user_created;
             desktop_cpus.date_created = existingCPU.date_created;
 
@@ -150,7 +180,7 @@ namespace ITAssetManagement.Controllers
 
             return Ok(desktop_cpus); // Return the updated laptop data
         }
-        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR END)----------------------------------------------
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF CPU END)----------------------------------------------
 
         // POST: api/desktop_cpus
         [ResponseType(typeof(desktop_cpus))]

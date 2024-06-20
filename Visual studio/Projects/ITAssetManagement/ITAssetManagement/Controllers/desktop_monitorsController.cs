@@ -34,8 +34,35 @@ namespace ITAssetManagement.Controllers
 
             return Ok(desktop_monitors);
         }
+        //------------------ GET MONITOR INFORMATION WITH STATUS NAME START ------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/get_monitors")]
+        public IHttpActionResult Getmonitor()
+        {
+           
+            // Fetch non-loanable laptops along with their status from the database
+            var getmonitor = from l_monitor in db.desktop_monitors
 
-      
+                                                  join d_device_status in db.device_status
+                                                  on l_monitor.status_id equals d_device_status.id
+
+                                                  select new
+                                                  {
+                                                      l_monitor.id,
+                                                      l_monitor.brand_name,
+                                                      l_monitor.model,
+                                                      l_monitor.monitor_serial_number,
+                                                      l_monitor.monitor_tag_number,
+                                                   
+                                                      // Get all laptop details
+                                                      monitor_StatusName = d_device_status.name // Get the status name
+                                                  };
+
+            // Return the result with the status included
+            return Ok(getmonitor);
+        }
+        //------------------ GET MONITOR INFORMATION WITH STATUS NAME END ------------------------
 
         // PUT: api/desktop_monitors/5
         [ResponseType(typeof(void))]
