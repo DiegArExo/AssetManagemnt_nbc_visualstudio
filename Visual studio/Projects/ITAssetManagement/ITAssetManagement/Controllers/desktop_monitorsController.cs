@@ -87,6 +87,78 @@ namespace ITAssetManagement.Controllers
             //return StatusCode(HttpStatusCode.NoContent);
             return Ok(desktop_monitors);
         }
+
+
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR START)----------------------------------------------
+
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/monitor/write_off_monitor/{id}")]
+        public IHttpActionResult PutWriteOffMonitor(int id, desktop_monitors desktop_monitors)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Content(HttpStatusCode.BadRequest, ModelState);
+            }
+            if (id != desktop_monitors.id)
+            {
+                return BadRequest();
+            }
+
+            // Retrieve the existing entity from the database
+            var existingMonitor = db.desktop_monitors.Find(id);
+            if (existingMonitor == null)
+            {
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
+            }
+
+            desktop_monitors.model = existingMonitor.model;
+            desktop_monitors.brand_name = existingMonitor.brand_name;
+            desktop_monitors.monitor_serial_number = existingMonitor.monitor_serial_number;
+            desktop_monitors.monitor_tag_number = existingMonitor.monitor_tag_number;
+            desktop_monitors.user_created = existingMonitor.user_created;
+            desktop_monitors.date_created = existingMonitor.date_created;
+
+
+            // Always update the date_updated field
+            desktop_monitors.date_updated = DateTime.Now;
+            // Update device_status_id for the laptop
+            desktop_monitors.status_id = 5;
+
+            db.Entry(existingMonitor).CurrentValues.SetValues(desktop_monitors);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!desktop_monitorsExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+            return Ok(existingMonitor); // Return the updated laptop data
+        }
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR END)----------------------------------------------
+
+
+
+
         // PUT: api/desktop_monitors/5
         [ResponseType(typeof(void))]
         [Route("api/desktop_monitors/write_off/update/{id}")]

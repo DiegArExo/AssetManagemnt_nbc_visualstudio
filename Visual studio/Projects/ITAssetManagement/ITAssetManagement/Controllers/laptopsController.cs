@@ -180,7 +180,7 @@ namespace ITAssetManagement.Controllers
             return Ok(laptop);
         }
 
-        //--------------------------------------------- PUT: api/users/5----------------------------------------------
+        //--------------------------------------------- api/laptops/write_off_laptops/{id}----------------------------------------------
 
         [ResponseType(typeof(void))]
         [HttpPut]
@@ -191,7 +191,6 @@ namespace ITAssetManagement.Controllers
             {
                 return Content(HttpStatusCode.BadRequest, ModelState);
             }
-
             if (id != laptop.id)
             {
                 return BadRequest();
@@ -213,7 +212,9 @@ namespace ITAssetManagement.Controllers
 
             // Always update the date_updated field
             laptop.date_updated = DateTime.Now;
-
+            // Update device_status_id for the laptop
+            laptop.device_status_id = 5;
+            
             db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
 
             try
@@ -243,6 +244,7 @@ namespace ITAssetManagement.Controllers
 
             return Ok(existingLaptop); // Return the updated laptop data
         }
+        //--------------------------------------------- api/laptops/write_off_laptops/{id}----------------------------------------------
 
         // POST: api/laptops
         [ResponseType(typeof(laptop))]

@@ -31,8 +31,8 @@ namespace ITAssetManagement.Models
         [Column(TypeName = "text")]
         public string comments { get; set; }
 
-        [MaxLength(1)]
-        public byte[] attachment { get; set; }
+        [MaxLength]
+        public string attachment { get; set; }
 
         public int? status_id { get; set; }
 

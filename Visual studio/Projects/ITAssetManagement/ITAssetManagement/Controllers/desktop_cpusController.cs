@@ -85,6 +85,73 @@ namespace ITAssetManagement.Controllers
             return Ok(desktop_cpus);
         }
 
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR START)----------------------------------------------
+
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/cpu/write_off_cpu/{id}")]
+        public IHttpActionResult PutWriteOffCPU(int id, desktop_cpus desktop_cpus)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Content(HttpStatusCode.BadRequest, ModelState);
+            }
+            if (id != desktop_cpus.id)
+            {
+                return BadRequest();
+            }
+
+            // Retrieve the existing entity from the database
+            var existingCPU = db.desktop_cpus.Find(id);
+            if (existingCPU == null)
+            {
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
+            }
+
+            // Preserve fields that should not be changed
+            desktop_cpus.model = existingCPU.model;
+            desktop_cpus.brand_name = existingCPU.brand_name;
+            desktop_cpus.cpu_serial_number = existingCPU.cpu_serial_number;
+            desktop_cpus.cpu_tag_number = existingCPU.cpu_serial_number;
+            desktop_cpus.user_created = existingCPU.user_created;
+            desktop_cpus.date_created = existingCPU.date_created;
+
+            // Always update the date_updated field
+            desktop_cpus.date_updated = DateTime.Now;
+            // Update device_status_id for the laptop
+            desktop_cpus.status_id = 5;
+
+            db.Entry(existingCPU).CurrentValues.SetValues(desktop_cpus);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!desktop_cpusExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+            return Ok(desktop_cpus); // Return the updated laptop data
+        }
+        //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR END)----------------------------------------------
+
         // POST: api/desktop_cpus
         [ResponseType(typeof(desktop_cpus))]
         public IHttpActionResult Postdesktop_cpus(desktop_cpus desktop_cpus)
