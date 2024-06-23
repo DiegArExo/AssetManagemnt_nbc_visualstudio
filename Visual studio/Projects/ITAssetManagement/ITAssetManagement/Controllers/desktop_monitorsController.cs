@@ -236,20 +236,59 @@ namespace ITAssetManagement.Controllers
             //return StatusCode(HttpStatusCode.NoContent);
             return Ok(desktop_monitors);
         }
-        // POST: api/desktop_monitors
+        //------------------------------------------------------------------------------------------------POST: api/desktop_monitors start-------------------------------------------------------
         [ResponseType(typeof(desktop_monitors))]
-        public IHttpActionResult Postdesktop_monitors(desktop_monitors desktop_monitors)
+        public IHttpActionResult Postdesktop_monitors(MonitoInvoiceModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            using (var transaction = db.Database.BeginTransaction())
+            {
 
-            db.desktop_monitors.Add(desktop_monitors);
-            db.SaveChanges();
+                try
+                {
+                    var desktop_monitors = model.Desktop_monitors;
 
-            return CreatedAtRoute("DefaultApi", new { id = desktop_monitors.id }, desktop_monitors);
+                    desktop_monitors.date_created = DateTime.Now;
+                    db.desktop_monitors.Add(desktop_monitors);
+                    db.SaveChanges();
+
+                    // Created instance to insert into the invoice table
+                    var MonitorInvoice = new monitor_invoice
+                    {
+                        monitor_id = desktop_monitors.id,
+                        invoice_document = model.Invoice_monitor,
+                        user_created = desktop_monitors.user_created ?? 0,
+                        date_created = DateTime.Now
+                    };
+                    // Save data in the invoice table to store the invoice documents
+                    db.monitor_invoice.Add(MonitorInvoice);
+                    db.SaveChanges();
+
+
+                    transaction.Commit();
+
+                    // return CreatedAtRoute("DefaultApi", new { id = desktop_monitors.id }, desktop_monitors);
+                    return Content(HttpStatusCode.Created, new { message = "Monitor created successfully.", assigned_desktops = desktop_monitors });
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Log the exception
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving desktop and monitor information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    // Rollback incase of any issues in the transaction
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
         }
+
+        //------------------------------------------------------------------------------------------------POST: api/desktop_monitors End-------------------------------------------------------
 
         // DELETE: api/desktop_monitors/5
         [ResponseType(typeof(desktop_monitors))]

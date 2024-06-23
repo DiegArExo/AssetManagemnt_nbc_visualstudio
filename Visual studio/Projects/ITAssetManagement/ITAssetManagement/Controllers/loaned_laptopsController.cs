@@ -115,9 +115,9 @@ namespace ITAssetManagement.Controllers
             return Ok(loaned_laptops);
         }
 
-        // POST: api/loaned_laptops
+        //-------------------------------------------------------------- POST: api/loaned_laptops ------------------------------------------------------------------------------
         [ResponseType(typeof(loaned_laptops))]
-        public IHttpActionResult Postloaned_laptops(loaned_laptops loaned_laptops)
+        public IHttpActionResult Postloaned_laptops(LoanOut_laptopModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -128,6 +128,7 @@ namespace ITAssetManagement.Controllers
 
                 try
                 {
+                    var loaned_laptops = model.LoanOut_Laptops;
                     loaned_laptops.date_created = DateTime.Now;
                     //change to authenticated user
                     loaned_laptops.user_created = 1;
@@ -142,6 +143,7 @@ namespace ITAssetManagement.Controllers
                     db.loaned_laptops.Add(loaned_laptops);
                     db.SaveChanges();
 
+
                     // Update the laptop status to 2. which means Assigned
                     var laptop = db.laptops.Find(loaned_laptops.loaned_laptop_id);
                     if (laptop != null)
@@ -150,6 +152,23 @@ namespace ITAssetManagement.Controllers
                         laptop.device_status_id = 3;
                         db.SaveChanges();
                     }
+
+
+                    // Created instance to insert into the invoice table
+                    var Laptop_LoanOut_docs = new loan_out_laptop
+                    {
+                        laptop_id = loaned_laptops.loaned_laptop_id,
+                        user_id = loaned_laptops.user_loaned_id,
+                        loan_out_document = model.loan_out_document,
+                        user_created = loaned_laptops.user_created,
+                        date_created = DateTime.Now
+                    };
+
+                    // Save data in the invoice table to store the invoice documents
+                    db.loan_out_laptop.Add(Laptop_LoanOut_docs);
+                    db.SaveChanges();
+
+
 
                     // Commiting a transaction this means that all transactions are made succefully made.
                     transaction.Commit();
@@ -165,6 +184,8 @@ namespace ITAssetManagement.Controllers
                 }
             }
         }
+
+        //-------------------------------------------------------------- POST: api/loaned_laptops End ------------------------------------------------------------------------------
 
         // DELETE: api/loaned_laptops/5
         [ResponseType(typeof(loaned_laptops))]

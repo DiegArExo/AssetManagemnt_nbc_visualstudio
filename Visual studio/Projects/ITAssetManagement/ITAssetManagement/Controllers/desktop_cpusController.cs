@@ -182,20 +182,58 @@ namespace ITAssetManagement.Controllers
         }
         //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF CPU END)----------------------------------------------
 
-        // POST: api/desktop_cpus
+        //--------------------------------------------------------------------------------- POST: api/desktop_cpus start ---------------------------------------------------------------------------------
         [ResponseType(typeof(desktop_cpus))]
-        public IHttpActionResult Postdesktop_cpus(desktop_cpus desktop_cpus)
+        public IHttpActionResult Postdesktop_cpus(CpuInvoiceModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            using (var transaction = db.Database.BeginTransaction())
+            {
 
-            db.desktop_cpus.Add(desktop_cpus);
-            db.SaveChanges();
+                try
+                {
+                    var desktop_cpus = model.Desktop_cpu;
+                    desktop_cpus.date_created = DateTime.Now;
 
-            return CreatedAtRoute("DefaultApi", new { id = desktop_cpus.id }, desktop_cpus);
+                    db.desktop_cpus.Add(desktop_cpus);
+                    db.SaveChanges();
+
+                    // Created instance to insert into the invoice table
+                    var CpuInvoice = new cpu_invoice
+                    {
+                        cpu_id = desktop_cpus.id,
+                        invoice_document = model.Invoice_cpu,
+                        user_created = desktop_cpus.user_created ?? 0,
+                        date_created = DateTime.Now
+                    };
+                    // Save data in the invoice table to store the invoice documents
+                    db.cpu_invoice.Add(CpuInvoice);
+                    db.SaveChanges();
+
+                    transaction.Commit();
+
+                    //return CreatedAtRoute("DefaultApi", new { id = desktop_cpus.id }, desktop_cpus);
+                    return Content(HttpStatusCode.Created, new { message = "CPU created successfully.", assigned_desktops = desktop_cpus });
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Log the exception
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving desktop CPUs information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    // Rollback incase of any issues in the transaction
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
         }
+
+        //--------------------------------------------------------------------------------- POST: api/desktop_cpus start ---------------------------------------------------------------------------------
 
         // DELETE: api/desktop_cpus/5
         [ResponseType(typeof(desktop_cpus))]

@@ -39,7 +39,7 @@ namespace ITAssetManagement.Models
 
         public int? device_status_id { get; set; }
 
-        public int user_assigned_id { get; set; }
+        public int? user_assigned_id { get; set; }
 
         public int user_created { get; set; }
 

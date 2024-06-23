@@ -410,27 +410,33 @@ namespace ITAssetManagement.Controllers
                         return BadRequest(ModelState);
                     }
                 // Check for uniqueness of desktop_monitor_id and user_assigned_id
-                var existingRecord = db.assigned_desktops.FirstOrDefault(x => x.joined_desktop_monitor_cpu_id == assigned_desktops.joined_desktop_monitor_cpu_id && x.user_assigned_id == assigned_desktops.user_assigned_id);
+                var existingRecord = db.assigned_desktops.FirstOrDefault(x => x.joined_desktop_monitor_cpu_id == assigned_desktops.joined_desktop_monitor_cpu_id);// && x.user_assigned_id != assigned_desktops.user_assigned_id);
                 if (existingRecord != null)
                 {
-                    // Record with same desktop_monitor_id and user_assigned_id already exists
-                   
-                    return StatusCode(409, "Record with same desktop monitor ID and user assigned ID already exists.");
+                    // Record with same desktop_monitor_id and 
+
+                    //return StatusCode(409, "Record with same desktop monitor ID ");
                     //return StatusCode(409);
+                    // Record with same desktop monitor ID and user assigned ID already exists
+                    return Content(HttpStatusCode.Conflict, new { message = "Record with same desktop monitor ID and user assigned ID already exists." });
 
                 }
                 db.assigned_desktops.Add(assigned_desktops);
                     db.SaveChanges();
-                    //Used for returning a response with status code 201(Created) and a Location header.
-                    return CreatedAtRoute("DefaultApi", new { id = assigned_desktops.id }, assigned_desktops);
-               
-              
+                //Used for returning a response with status code 201(Created) and a Location header.
+                //  return CreatedAtRoute("DefaultApi", new { id = assigned_desktops.id }, assigned_desktops);
+                // Return success response
+                return Content(HttpStatusCode.Created, new { message = "Assigned desktop created successfully.", assigned_desktops = assigned_desktops });
+
+
 
             }
             catch (Exception ex)
             {
                 //Returns an error message
-                return InternalServerError(ex);
+                //return InternalServerError(ex);
+                // Return error response
+                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
             }
         }
 

@@ -8,7 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class user
     {
-        
         public int id { get; set; }
 
         [Required]
@@ -31,6 +30,7 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-        
+        [StringLength(255)]
+        public string token { get; set; }
     }
 }

@@ -246,42 +246,64 @@ namespace ITAssetManagement.Controllers
 
             return Ok(existingLaptop); // Return the updated laptop data
         }
-        //--------------------------------------------- api/laptops/write_off_laptops/{id}----------------------------------------------
+        //---------------------------------------------POST LAPTOP INFORMATION----------------------------------------------
 
         // POST: api/laptops
+
         [ResponseType(typeof(laptop))]
-        public IHttpActionResult Postlaptop(laptop laptop)
+        [HttpPost]
+        [Route("api/laptops")]
+        public IHttpActionResult Postlaptop(LaptopInvoiceModel model)
         {
             // Check if the model state is valid
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            try
+            using (var transaction = db.Database.BeginTransaction())
             {
-                // Set the current timestamp for date_created
-                laptop.date_created = DateTime.Now;
+                try
+                {
+                    // Create an instance of laptop and set its properties
+                    var laptop = model.Laptop;
 
-                // Add the new laptop to the database
-                db.laptops.Add(laptop);
+                    laptop.date_created = DateTime.Now;
+                    db.laptops.Add(laptop);
+                    db.SaveChanges();
 
-                // Save changes to the database
-                db.SaveChanges();
+                    // Created instance to insert into the invoice table
+                    var laptopInvoice = new laptop_invoice
+                    {
+                        laptop_id = laptop.id,
+                        invoice_document = model.InvoiceDescription,
+                        user_created = laptop.user_created,
+                        date_created = DateTime.Now
+                    };
 
-                // Return OK response with the added laptop data
-                return Ok(laptop);
+                    // Save data in the invoice table to store the invoice documents
+                    db.laptop_invoice.Add(laptopInvoice);
+                    db.SaveChanges();
+
+                   
+                    transaction.Commit();
+
+                    // Return OK response with the added laptop data
+                    // return Ok(laptop);
+                    return Content(HttpStatusCode.Created, new { message = "Laptop created successfully.", assigned_desktops = laptop });
+                }
+                catch (Exception ex)
+                {
+                    // Rollback incase of any issues in the transaction
+                    transaction.Rollback();
+
+                    // return InternalServerError(ex);
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
+                }
+
+
             }
-            catch (Exception ex)
-            {
-
-                return InternalServerError(ex);
-            }
-
-
         }
 
-       
 
 
 

@@ -15,6 +15,7 @@ namespace ITAssetManagement.Models
         public virtual DbSet<assigned_desktops> assigned_desktops { get; set; }
         public virtual DbSet<assigned_laptops> assigned_laptops { get; set; }
         public virtual DbSet<assigned_sdwans> assigned_sdwans { get; set; }
+        public virtual DbSet<authentication> authentication { get; set; }
         public virtual DbSet<desktop_cpus> desktop_cpus { get; set; }
         public virtual DbSet<desktop_monitors> desktop_monitors { get; set; }
         public virtual DbSet<device_status> device_status { get; set; }
@@ -34,6 +35,13 @@ namespace ITAssetManagement.Models
         public virtual DbSet<trailing_loaned_laptops> trailing_loaned_laptops { get; set; }
         public virtual DbSet<trailing_loaned_sdwans> trailing_loaned_sdwans { get; set; }
         public virtual DbSet<user> users { get; set; }
+        public virtual DbSet<cpu_invoice> cpu_invoice { get; set; }
+        public virtual DbSet<laptop_invoice> laptop_invoice { get; set; }
+        public virtual DbSet<loan_out_laptop> loan_out_laptop { get; set; }
+        public virtual DbSet<monitor_invoice> monitor_invoice { get; set; }
+        public virtual DbSet<sign_out_desktop_cpu> sign_out_desktop_cpu { get; set; }
+        public virtual DbSet<sign_out_desktop_monitor> sign_out_desktop_monitor { get; set; }
+        public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -208,7 +216,11 @@ namespace ITAssetManagement.Models
                 .Property(e => e.email)
                 .IsUnicode(false);
 
-            
+            modelBuilder.Entity<user>()
+               .Property(e => e.token)
+               .IsUnicode(false);
+
+
         }
     }
 }

@@ -115,9 +115,9 @@ namespace ITAssetManagement.Controllers
             return Ok(assigned_laptops);
         }
 
-        // POST: api/assigned_laptops
+        //------------------------------------------------------------POST: api/assigned_laptops---------------------------------------------------------------------------------
         [ResponseType(typeof(assigned_laptops))]
-        public IHttpActionResult Postassigned_laptops(assigned_laptops assigned_laptops)
+        public IHttpActionResult Postassigned_laptops(LaptopSignOut model)
         {
             if (!ModelState.IsValid)
             {
@@ -129,13 +129,18 @@ namespace ITAssetManagement.Controllers
             {
                 try
                 {
-                   
+                    var assigned_laptops = model.Assign_Laptop;
                     assigned_laptops.date_created = DateTime.Now; //This is how you Insert the date from the API side
                     assigned_laptops.user_created = 1; // Replace with the authenticated user ID
-
                    
                     db.assigned_laptops.Add(assigned_laptops); //Save the recore
                     db.SaveChanges();
+
+                    //Create an instance to store in the sigout table
+
+                   
+
+
 
                     // Update the laptop status to 2. which means Assigned
                     var laptop = db.laptops.Find(assigned_laptops.laptop_id);
@@ -146,6 +151,20 @@ namespace ITAssetManagement.Controllers
                         laptop.device_status_id = 2;
                         db.SaveChanges();
                     }
+
+                    // Created instance to insert into the invoice table
+                    var LapSignout_docs = new sign_out_laptop
+                    {
+                        laptop_id = assigned_laptops.laptop_id,
+                        user_id = assigned_laptops.user_assigned_id,
+                        signout_document = model.signout_document,
+                        user_created = assigned_laptops.user_created,
+                        date_created = DateTime.Now
+                    };
+
+                    // Save data in the invoice table to store the invoice documents
+                    db.sign_out_laptop.Add(LapSignout_docs);
+                    db.SaveChanges();
 
                     // Commiting a transaction this means that all transactions are made succefully made.
                     transaction.Commit();
@@ -160,6 +179,7 @@ namespace ITAssetManagement.Controllers
                 }
             }
         }
+        //------------------------------------------------------------POST: api/assigned_laptops---------------------------------------------------------------------------------
 
 
         // DELETE: api/ussigned_laptops/unassign_use/

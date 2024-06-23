@@ -115,6 +115,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.9.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.9\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -253,6 +254,7 @@
     <Compile Include="Controllers\laptopsController.cs" />
     <Compile Include="Controllers\loaned_laptopsController.cs" />
     <Compile Include="Controllers\loaned_sdwansController.cs" />
+    <Compile Include="Controllers\NbcController.cs" />
     <Compile Include="Controllers\router_mtcController.cs" />
     <Compile Include="Controllers\sdwansController.cs" />
     <Compile Include="Controllers\sdwans_stationController.cs" />
@@ -264,6 +266,10 @@
     <Compile Include="Models\assigned_desktops.cs" />
     <Compile Include="Models\assigned_laptops.cs" />
     <Compile Include="Models\assigned_sdwans.cs" />
+    <Compile Include="Models\authentication.cs" />
+    <Compile Include="Models\CpuInvoiceModel.cs" />
+    <Compile Include="Models\cpu_invoice.cs" />
+    <Compile Include="Models\DeleteModel.cs" />
     <Compile Include="Models\desktop_cpus.cs" />
     <Compile Include="Models\desktop_monitors.cs" />
     <Compile Include="Models\device_status.cs" />
@@ -271,11 +277,23 @@
     <Compile Include="Models\ITAssetManagementDB.cs" />
     <Compile Include="Models\joined_desktops_monitors.cs" />
     <Compile Include="Models\laptop.cs" />
+    <Compile Include="Models\LaptopInvoiceModel.cs" />
+    <Compile Include="Models\LaptopSignOut.cs" />
+    <Compile Include="Models\laptop_invoice.cs" />
     <Compile Include="Models\loaned_laptops.cs" />
     <Compile Include="Models\loaned_sdwans.cs" />
+    <Compile Include="Models\LoanOut_laptopModel.cs" />
+    <Compile Include="Models\loan_out_laptop.cs" />
+    <Compile Include="Models\MonitoInvoiceModel.cs" />
+    <Compile Include="Models\monitor_invoice.cs" />
     <Compile Include="Models\router_mtc.cs" />
     <Compile Include="Models\sdwan.cs" />
     <Compile Include="Models\sdwan_laptops.cs" />
+    <Compile Include="Models\SignOut_DesktopMonitor.cs" />
+    <Compile Include="Models\SignOut_Desktop_CpuModel.cs" />
+    <Compile Include="Models\sign_out_desktop_cpu.cs" />
+    <Compile Include="Models\sign_out_desktop_monitor.cs" />
+    <Compile Include="Models\sign_out_laptop.cs" />
     <Compile Include="Models\trailing_assigned_desktops.cs" />
     <Compile Include="Models\trailing_assigned_laptops.cs" />
     <Compile Include="Models\trailing_assigned_sdwans.cs" />

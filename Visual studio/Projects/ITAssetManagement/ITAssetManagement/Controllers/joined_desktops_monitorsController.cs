@@ -157,7 +157,7 @@ namespace ITAssetManagement.Controllers
         }
 
 
-        // POST: api/joined_desktops_monitors
+        //---------------------------------------------------------------POST: api/joined_cpu_monitors start ------------------------------------------------
         [ResponseType(typeof(joined_desktops_monitors))]
         public IHttpActionResult Postjoined_desktops_monitors(joined_desktops_monitors joined_desktops_monitors)
         {
@@ -166,11 +166,29 @@ namespace ITAssetManagement.Controllers
                 return BadRequest(ModelState);
             }
 
-            db.joined_desktops_monitors.Add(joined_desktops_monitors);
-            db.SaveChanges();
+            try
+            {
+                db.joined_desktops_monitors.Add(joined_desktops_monitors);
+                db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = joined_desktops_monitors.id }, joined_desktops_monitors);
+               // return CreatedAtRoute("DefaultApi", new { id = joined_desktops_monitors.id }, joined_desktops_monitors);
+                return Content(HttpStatusCode.Created, new { message = "Desktop Station created successfully.", assigned_desktops = joined_desktops_monitors });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the exception
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(new Exception("An error occurred while creating the assigned desktop.", innerException ?? ex));
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return InternalServerError(new Exception("An unexpected error occurred.", ex));
+            }
         }
+
+
+        //---------------------------------------------------------------POST: api/joined_cpu_monitors start ------------------------------------------------
 
         // DELETE: api/joined_desktops_monitors/5
         [ResponseType(typeof(joined_desktops_monitors))]
