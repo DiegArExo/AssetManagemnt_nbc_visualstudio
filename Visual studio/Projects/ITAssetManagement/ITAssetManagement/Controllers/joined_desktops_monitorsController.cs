@@ -35,7 +35,7 @@ namespace ITAssetManagement.Controllers
             return Ok(joined_desktops_monitors);
         }
 
-        // PUT: api/joined_desktops_monitors/update_monitor/5
+        //------------------------------------ PUT UNASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO ZERO(0)--------------------------------------------------
         [ResponseType(typeof(void))]
         [Route("api/joined_desktops_monitors/update_monitor")]
         public IHttpActionResult Putjoined_desktops_monitor(int id, joined_desktops_monitors joined_desktops_monitors)
@@ -45,57 +45,134 @@ namespace ITAssetManagement.Controllers
                 return BadRequest(ModelState);
             }
 
-          
-            // Retrieve the existing entity from the database
             var existingJoinedDesktopsMonitors = db.joined_desktops_monitors.Find(id);
             if (existingJoinedDesktopsMonitors == null)
             {
-                //return NotFound();
-                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
             }
 
-            // Update only the fields that need to be changed
+            // Check if desktop_monitor_id already exists
+            var monitorExists = db.joined_desktops_monitors.Any(jdm => jdm.desktop_monitor_id == joined_desktops_monitors.desktop_monitor_id && jdm.id != id);
+            if (monitorExists)
+            {
+                return Content(HttpStatusCode.Conflict, new { Message = "A record with the same desktop_monitor_id already exists." });
+            }
 
             existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
 
-            // existingJoinedDesktopsMonitors.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
-            // existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
-            // existingJoinedDesktopsMonitors.user_assigned_id = updatedJoinedDesktopsMonitors.user_assigned_id;
-            // existingJoinedDesktopsMonitors.user_updated = joined_desktops_monitors.user_updated;
-            // existingJoinedDesktopsMonitors.date_created = joined_desktops_monitors.date_created;
-            // existingJoinedDesktopsMonitors.date_updated = joined_desktops_monitors.date_updated;
-
-            // This code will update the date updated to the current one
-            // existingJoinedDesktopsMonitors.date_updated = DateTime.UtcNow;  
-
             db.Entry(existingJoinedDesktopsMonitors).State = EntityState.Modified;
 
-            //Try and Catch Error to avoid the code from crashing.
             try
             {
                 db.SaveChanges();
+                return Ok(new { Message = "Record updated successfully.", joined_desktops_monitors });
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!joined_desktops_monitorsExists(id))
                 {
-                    return NotFound();
+                    return Content(HttpStatusCode.NotFound, new { Message = "Concurrency error: Record does not exist." });
                 }
                 else
                 {
-                    throw;
+                    return Content(HttpStatusCode.InternalServerError, new { Message = "Concurrency error occurred." });
                 }
             }
             catch (DbUpdateException ex)
             {
                 // Log the inner exception
                 var innerException = ex.InnerException?.InnerException;
-                return InternalServerError(innerException ?? ex);
+                
+                return InternalServerError(new Exception("An error occurred while saving desktop CPUs information.", innerException ?? ex));
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(new Exception("An unexpected error occurred.", ex));
+            }
+        }
+        //------------------------------------ PUT UNASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO ZERO(0)--------------------------------------------------
+
+
+        //------------------------------------ PUT ASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO THE GIVEN MONITOR ID--------------------------------------------------
+     
+        [ResponseType(typeof(void))]
+        [Route("api/joined_desktops_monitors/assign_monitor_to_user")]
+        public IHttpActionResult Putjoined_desktops_monitor_assign(int id, SignOut_DesktopMonitor model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
-            return Ok(joined_desktops_monitors);
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var joined_desktops_monitors = model.Sign_out_Monitor;
+                    // Retrieve the existing entity from the database
+                    var existingJoinedDesktopsMonitors = db.joined_desktops_monitors.Find(id);
+                    if (existingJoinedDesktopsMonitors == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+                    }
+
+                 
+
+
+                    // Update the existing entity
+                    existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
+                    db.Entry(existingJoinedDesktopsMonitors).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    // Create an instance for sign_out_desktop_monitor
+                    var MonitorSigout = new sign_out_desktop_monitor
+                    {
+                        desktop_monitor_id = model.desktop_monitor_id,
+                        signout_document = model.signout_document,
+                        user_id = model.user_id,
+                        user_created = existingJoinedDesktopsMonitors.user_created,
+                        date_created = DateTime.Now
+                    };
+
+                    // Save data in the sign_out_desktop_monitor table to store the sign-out documents
+                    db.sign_out_desktop_monitor.Add(MonitorSigout);
+                    db.SaveChanges();
+
+                    // Commit the transaction
+                    transaction.Commit();
+
+                    return Ok(new { message = "Record updated and monitor signed out successfully." });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    transaction.Rollback();
+                    if (!joined_desktops_monitorsExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    transaction.Rollback();
+                    // Log the inner exception
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(innerException ?? ex);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while updating the record.", error = ex.Message });
+                }
+            }
         }
-        // PUT: api/joined_desktops_monitors/update_monitor/5
+
+        //------------------------------------ PUT ASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO THE GIVEN MONITOR ID--------------------------------------------------
+
+        //--------------------------------------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO ZERO(0) ----------------------------------
         [ResponseType(typeof(void))]
         [Route("api/joined_desktops_monitors/update_cpu")]
         public IHttpActionResult Putjoined_desktops_cpu(int id, joined_desktops_monitors joined_desktops_monitors)
@@ -118,15 +195,6 @@ namespace ITAssetManagement.Controllers
 
             existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
 
-            // existingJoinedDesktopsMonitors.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
-            // existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
-            // existingJoinedDesktopsMonitors.user_assigned_id = updatedJoinedDesktopsMonitors.user_assigned_id;
-            // existingJoinedDesktopsMonitors.user_updated = joined_desktops_monitors.user_updated;
-            // existingJoinedDesktopsMonitors.date_created = joined_desktops_monitors.date_created;
-            // existingJoinedDesktopsMonitors.date_updated = joined_desktops_monitors.date_updated;
-
-            // This code will update the date updated to the current one
-            // existingJoinedDesktopsMonitors.date_updated = DateTime.UtcNow;  
 
             db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
 
@@ -155,6 +223,92 @@ namespace ITAssetManagement.Controllers
 
             return Ok(joined_desktops_monitors);
         }
+        //---------------------------- ----------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO ZERO(0) ----------------------------------
+
+
+
+        //--------------------------------------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO GIVEN CPU ID ----------------------------------
+        [ResponseType(typeof(void))]
+        [Route("api/joined_desktops_monitors/assign_update_cpu")]
+        public IHttpActionResult Putjoined_desktops_cpu(int id, SignOut_Desktop_CpuModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var joined_desktops_monitors = model.Signout_Cpu;
+                    // Retrieve the existing entity from the database
+                    var existingJoinedDesktopsCPU = db.joined_desktops_monitors.Find(id);
+                    if (existingJoinedDesktopsCPU == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+                    }
+
+
+
+                    // Update the existing entity
+                    existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
+                    db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    // Create an instance for sign_out_desktop_cpu
+                    var CPUSignOut = new sign_out_desktop_cpu
+                    {
+                        desktop_cpu_id = model.desktop_cpu_id,
+                        signout_document = model.signout_document,
+                        user_id = model.user_id,
+                        user_created = existingJoinedDesktopsCPU.user_created,
+                        date_created = DateTime.Now
+                    };
+
+                    // Save data in the sign_out_desktop_cpu table to store the sign-out documents
+                    db.sign_out_desktop_cpu.Add(CPUSignOut);
+                    db.SaveChanges();
+
+                    // Commit the transaction
+                    transaction.Commit();
+
+                    return Ok(new { message = "Record updated and CPU signed out successfully." });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    transaction.Rollback();
+                    if (!joined_desktops_monitorsExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    transaction.Rollback();
+                    // Log the inner exception
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(innerException ?? ex);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while updating the record.", error = ex.Message });
+                }
+            }
+        }
+
+        //---------------------------- ----------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO GIVEN CPU ID  ----------------------------------
+
+
+
+
+
+
 
 
         //---------------------------------------------------------------POST: api/joined_cpu_monitors start ------------------------------------------------

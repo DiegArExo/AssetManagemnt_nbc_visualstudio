@@ -7,7 +7,7 @@ namespace ITAssetManagement.Models
 {
     public class SignOut_DesktopMonitor
     {
-        public desktop_monitors Sigout_monitor { get; set; }
+        public joined_desktops_monitors Sign_out_Monitor { get; set; }
         public int user_id { get; set; }
         public int desktop_monitor_id { get; set; }
         public string signout_document { get; set; }
