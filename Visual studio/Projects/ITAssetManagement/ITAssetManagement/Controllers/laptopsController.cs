@@ -289,7 +289,7 @@ namespace ITAssetManagement.Controllers
 
                     // Return OK response with the added laptop data
                     // return Ok(laptop);
-                    return Content(HttpStatusCode.Created, new { message = "Laptop created successfully.", assigned_desktops = laptop });
+                    return Content(HttpStatusCode.Created, new { message = "Laptop created successfully.", laptop = laptop });
                 }
                 catch (Exception ex)
                 {

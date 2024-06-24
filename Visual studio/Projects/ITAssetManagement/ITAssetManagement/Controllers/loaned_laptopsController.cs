@@ -133,6 +133,14 @@ namespace ITAssetManagement.Controllers
                     //change to authenticated user
                     loaned_laptops.user_created = 1;
 
+                    var existingRecord = db.loaned_laptops.FirstOrDefault(x => x.loaned_laptop_id == loaned_laptops.loaned_laptop_id || x.user_loaned_id == loaned_laptops.user_loaned_id);
+
+                    if (existingRecord != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, new { message = "Record with same Laptop ID Or User ID already exists." });
+
+                    }
+
                     // Check if loan_description is null or empty and set it to null if true
                     if (string.IsNullOrWhiteSpace(loaned_laptops.descriptions))
                     {
@@ -169,18 +177,23 @@ namespace ITAssetManagement.Controllers
                     db.SaveChanges();
 
 
+                    // return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+                   // return Content(HttpStatusCode.Created, new { message = "Laptop loaned successfully.", loaned_laptops = loaned_laptops });
 
                     // Commiting a transaction this means that all transactions are made succefully made.
                     transaction.Commit();
 
 
-                    return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
+                    // return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
+                 
+                    return Content(HttpStatusCode.Created, new { message = "Laptop Loaned successfully.", loaned_laptops = loaned_laptops });
                 }
                 catch (Exception ex)
                 {
                     // Rollback The transaction if something goes wrong
                     transaction.Rollback();
-                    return InternalServerError(ex);
+                    // return InternalServerError(ex);
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the loan laptop.", error = ex.Message });
                 }
             }
         }

@@ -123,24 +123,24 @@ namespace ITAssetManagement.Controllers
             {
                 return BadRequest(ModelState);
             }
-            //Transaction Ensures that both Operation work togther or fail togther.
-            //It prevents a situation where by assign is inserted but update is not done
             using (var transaction = db.Database.BeginTransaction())
             {
                 try
                 {
                     var assigned_laptops = model.Assign_Laptop;
-                    assigned_laptops.date_created = DateTime.Now; //This is how you Insert the date from the API side
-                    assigned_laptops.user_created = 1; // Replace with the authenticated user ID
-                   
-                    db.assigned_laptops.Add(assigned_laptops); //Save the recore
+                    assigned_laptops.date_created = DateTime.Now; 
+                    assigned_laptops.user_created = 1; 
+
+                    var existingRecord = db.assigned_laptops.FirstOrDefault(x => x.laptop_id == assigned_laptops.laptop_id || x.user_assigned_id == assigned_laptops.user_assigned_id);
+
+                    if (existingRecord != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, new { message = "Record with same Laptop ID Or User ID already exists." });
+
+                    }
+
+                    db.assigned_laptops.Add(assigned_laptops);
                     db.SaveChanges();
-
-                    //Create an instance to store in the sigout table
-
-                   
-
-
 
                     // Update the laptop status to 2. which means Assigned
                     var laptop = db.laptops.Find(assigned_laptops.laptop_id);
@@ -166,16 +166,17 @@ namespace ITAssetManagement.Controllers
                     db.sign_out_laptop.Add(LapSignout_docs);
                     db.SaveChanges();
 
-                    // Commiting a transaction this means that all transactions are made succefully made.
                     transaction.Commit();
 
-                    return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+                    // return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+                    return Content(HttpStatusCode.Created, new { message = "Laptop assigned successfully.", assigned_laptops = assigned_laptops });
                 }
                 catch (Exception ex)
                 {
                     // Rollback transaction if something goes wrong
                     transaction.Rollback();
-                    return InternalServerError(ex);
+                   // return InternalServerError(ex);
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
                 }
             }
         }
