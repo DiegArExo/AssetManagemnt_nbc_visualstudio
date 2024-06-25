@@ -252,6 +252,7 @@
     <Compile Include="Controllers\firewallsController.cs" />
     <Compile Include="Controllers\joined_desktops_monitorsController.cs" />
     <Compile Include="Controllers\laptopsController.cs" />
+    <Compile Include="Controllers\laptop_invoiceController.cs" />
     <Compile Include="Controllers\loaned_laptopsController.cs" />
     <Compile Include="Controllers\loaned_sdwansController.cs" />
     <Compile Include="Controllers\NbcController.cs" />
