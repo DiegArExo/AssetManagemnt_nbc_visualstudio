@@ -17,7 +17,7 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/assigned_laptops
-        public IQueryable<assigned_laptops> Getassigned_laptops()
+        public IQueryable<assigned_laptops> Getassigned_laptops(string token)
         {
             return db.assigned_laptops;
         }
@@ -34,10 +34,12 @@ namespace ITAssetManagement.Controllers
 
             return Ok(assigned_laptops);
         }
-        //GET FUNTION -- This one gets all the laptops and the users assocciated witht the laptops.
+
+
+        //-------------------------------------- GET ASSIGNED LAPTOP AND THEIR ASSOCIATED USERS START ------------------------------------
         [HttpGet]
         [Route("api/assigned_laptops_with_users_and_laptops")]
-        public IHttpActionResult GetAssignedLaptopsWithUsersAndLaptops(int assigned_laptop_id)
+        public IHttpActionResult GetAssignedLaptopsWithUsersAndLaptops(int assigned_laptop_id, string token)
         {
             try
             {
@@ -78,10 +80,11 @@ namespace ITAssetManagement.Controllers
                 return InternalServerError(ex);
             }
         }
+        //-------------------------------------- GET ASSIGNED LAPTOP AND THEIR ASSOCIATED USERS END --------------------------------------
 
         // PUT: api/assigned_laptops/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putassigned_laptops(int id, assigned_laptops assigned_laptops)
+        public IHttpActionResult Putassigned_laptops(int id, assigned_laptops assigned_laptops, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -115,9 +118,26 @@ namespace ITAssetManagement.Controllers
             return Ok(assigned_laptops);
         }
 
-        //------------------------------------------------------------POST: api/assigned_laptops---------------------------------------------------------------------------------
+        //// POST: api/assigned_laptops
+        //[ResponseType(typeof(assigned_laptops))]
+        //public IHttpActionResult Postassigned_laptops(assigned_laptops assigned_laptops)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    db.assigned_laptops.Add(assigned_laptops);
+        //    db.SaveChanges();
+
+        //    return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
+        //}
+
+
+        //-------------------------------------------------------ASSIGN A LAPTOP TO A USER START-------------------------------------------------------------------
+        // POST: api/assigned_laptops
         [ResponseType(typeof(assigned_laptops))]
-        public IHttpActionResult Postassigned_laptops(LaptopSignOut model)
+        public IHttpActionResult Postassigned_laptops(LaptopSignOut model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -128,8 +148,8 @@ namespace ITAssetManagement.Controllers
                 try
                 {
                     var assigned_laptops = model.Assign_Laptop;
-                    assigned_laptops.date_created = DateTime.Now; 
-                    assigned_laptops.user_created = 1; 
+                    assigned_laptops.date_created = DateTime.Now;
+                    assigned_laptops.user_created = 1;
 
                     var existingRecord = db.assigned_laptops.FirstOrDefault(x => x.laptop_id == assigned_laptops.laptop_id || x.user_assigned_id == assigned_laptops.user_assigned_id);
 
@@ -147,7 +167,7 @@ namespace ITAssetManagement.Controllers
 
                     if (laptop != null)
                     {
-                        
+
                         laptop.device_status_id = 2;
                         db.SaveChanges();
                     }
@@ -175,19 +195,19 @@ namespace ITAssetManagement.Controllers
                 {
                     // Rollback transaction if something goes wrong
                     transaction.Rollback();
-                   // return InternalServerError(ex);
+                    // return InternalServerError(ex);
                     return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
                 }
             }
         }
-        //------------------------------------------------------------POST: api/assigned_laptops---------------------------------------------------------------------------------
+        //-------------------------------------------------------ASSIGN A LAPTOP TO A USER END----------------------------------------------------------------------------------------------
 
-
+        //-------------------UN -ASSIGN A LAPTOP TO A USER START--------------------------------------------------------------------------
         // DELETE: api/ussigned_laptops/unassign_use/
         [ResponseType(typeof(assigned_laptops))]
         [HttpDelete]
         [Route("api/ussigned_laptops/unassign_user")]
-        public IHttpActionResult Unassigned_laptops(int un_assign_laptop_id)
+        public IHttpActionResult Unassigned_laptops(int un_assign_laptop_id, string token)
         {
 
             // Check if any assigned laptops exist
@@ -229,6 +249,24 @@ namespace ITAssetManagement.Controllers
                     return InternalServerError(ex);
                 }
             }
+        }
+
+        //-------------------UN -ASSIGN A LAPTOP TO A USER END----------------------------------------------------------------------------
+
+        // DELETE: api/assigned_laptops/5
+        [ResponseType(typeof(assigned_laptops))]
+        public IHttpActionResult Deleteassigned_laptops(int id, string token)
+        {
+            assigned_laptops assigned_laptops = db.assigned_laptops.Find(id);
+            if (assigned_laptops == null)
+            {
+                return NotFound();
+            }
+
+            db.assigned_laptops.Remove(assigned_laptops);
+            db.SaveChanges();
+
+            return Ok(assigned_laptops);
         }
 
         protected override void Dispose(bool disposing)

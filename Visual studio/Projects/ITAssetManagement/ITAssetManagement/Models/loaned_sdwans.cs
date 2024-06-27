@@ -25,6 +25,6 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-         
+        
     }
 }

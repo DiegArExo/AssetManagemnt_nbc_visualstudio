@@ -8,8 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class joined_desktops_monitors
     {
-        
-
         public int id { get; set; }
 
         public int? desktop_cpu_id { get; set; }
@@ -25,7 +23,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-        
     }
 }

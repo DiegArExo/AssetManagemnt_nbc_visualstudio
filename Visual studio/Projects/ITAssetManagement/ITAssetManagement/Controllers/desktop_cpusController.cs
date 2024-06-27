@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/desktop_cpus
-        public IQueryable<desktop_cpus> Getdesktop_cpus()
+        public IQueryable<desktop_cpus> Getdesktop_cpus(string token)
         {
             return db.desktop_cpus;
         }
 
         // GET: api/desktop_cpus/5
         [ResponseType(typeof(desktop_cpus))]
-        public IHttpActionResult Getdesktop_cpus(int id)
+        public IHttpActionResult Getdesktop_cpus(int id, string token)
         {
             desktop_cpus desktop_cpus = db.desktop_cpus.Find(id);
             if (desktop_cpus == null)
@@ -35,39 +35,9 @@ namespace ITAssetManagement.Controllers
             return Ok(desktop_cpus);
         }
 
-        //------------------ GET CPU INFORMATION WITH STATUS NAME START ------------------------
-        [ResponseType(typeof(desktop_cpus))]
-        [HttpGet]
-        [Route("api/desktop_monitors/get_cpus")]
-        public IHttpActionResult Getcpus()
-        {
-
-            // Fetch non-loanable laptops along with their status from the database
-            var get_cpu = from l_cpu in db.desktop_cpus
-
-                          join d_device_status in db.device_status
-                          on l_cpu.status_id equals d_device_status.id
-
-                          select new
-                          {
-                              l_cpu.id,
-                              l_cpu.brand_name,
-                              l_cpu.model,
-                              l_cpu.cpu_serial_number,
-                              l_cpu.cpu_tag_number,
-
-                              
-                              cpu_StatusName = d_device_status.name // Get the status name
-                          };
-
-            // Return the result with the status included
-            return Ok(get_cpu);
-        }
-        //------------------ GET MONITOR INFORMATION WITH STATUS NAME END ------------------------
-
         // PUT: api/desktop_cpus/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putdesktop_cpus(int id, desktop_cpus desktop_cpus)
+        public IHttpActionResult Putdesktop_cpus(int id, desktop_cpus desktop_cpus, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -115,12 +85,13 @@ namespace ITAssetManagement.Controllers
             return Ok(desktop_cpus);
         }
 
+
         //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF CPU START)----------------------------------------------
 
         [ResponseType(typeof(void))]
         [HttpPut]
         [Route("api/cpu/write_off_cpu/{id}")]
-        public IHttpActionResult PutWriteOffCPU(int id, desktop_cpus desktop_cpus)
+        public IHttpActionResult PutWriteOffCPU(int id, desktop_cpus desktop_cpus, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -182,9 +153,46 @@ namespace ITAssetManagement.Controllers
         }
         //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF CPU END)----------------------------------------------
 
+
+
+        //------------------------------------------------ GET CPU INFORMATION WITH STATUS NAME START ----------------------------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_monitors/get_cpus")]
+        public IHttpActionResult Getcpus(string token)
+        {
+            try { 
+            // Fetch non-loanable laptops along with their status from the database
+            var get_cpu = from l_cpu in db.desktop_cpus
+
+                          join d_device_status in db.device_status
+                          on l_cpu.status_id equals d_device_status.id
+
+                          select new
+                          {
+                              l_cpu.id,
+                              l_cpu.brand_name,
+                              l_cpu.model,
+                              l_cpu.cpu_serial_number,
+                              l_cpu.cpu_tag_number,
+
+
+                              cpu_StatusName = d_device_status.name // Get the status name
+                          };
+
+            // Return the result with the status included
+            return Ok(get_cpu);
+            }
+            catch(DbUpdateException ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
+            }
+        }
+        //------------------------------------------------ GET MONITOR INFORMATION WITH STATUS NAME END ------------------------------------------------------
+
         //--------------------------------------------------------------------------------- POST: api/desktop_cpus start ---------------------------------------------------------------------------------
         [ResponseType(typeof(desktop_cpus))]
-        public IHttpActionResult Postdesktop_cpus(CpuInvoiceModel model)
+        public IHttpActionResult Postdesktop_cpus(CpuInvoiceModel model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -206,7 +214,7 @@ namespace ITAssetManagement.Controllers
                     {
                         cpu_id = desktop_cpus.id,
                         invoice_document = model.Invoice_cpu,
-                        user_created = desktop_cpus.user_created ?? 0,
+                        user_created = desktop_cpus.user_created,
                         date_created = DateTime.Now
                     };
                     // Save data in the invoice table to store the invoice documents
@@ -235,9 +243,10 @@ namespace ITAssetManagement.Controllers
 
         //--------------------------------------------------------------------------------- POST: api/desktop_cpus start ---------------------------------------------------------------------------------
 
+
         // DELETE: api/desktop_cpus/5
         [ResponseType(typeof(desktop_cpus))]
-        public IHttpActionResult Deletedesktop_cpus(int id)
+        public IHttpActionResult Deletedesktop_cpus(int id, string token)
         {
             desktop_cpus desktop_cpus = db.desktop_cpus.Find(id);
             if (desktop_cpus == null)

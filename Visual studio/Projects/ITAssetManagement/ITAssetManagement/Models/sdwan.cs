@@ -8,8 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class sdwan
     {
-        
-
         public int id { get; set; }
 
         public int? firewall_id { get; set; }
@@ -17,6 +15,9 @@ namespace ITAssetManagement.Models
         public int? sdwanlaptop_id { get; set; }
 
         public int? router_id { get; set; }
+
+        [MaxLength]
+        public string attachment { get; set; }
 
         public bool type { get; set; }
 
@@ -32,7 +33,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-        
     }
 }

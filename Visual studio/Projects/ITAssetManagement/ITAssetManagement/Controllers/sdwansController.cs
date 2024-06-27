@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/sdwans
-        public IQueryable<sdwan> Getsdwans()
+        public IQueryable<sdwan> Getsdwans(string token)
         {
             return db.sdwans;
         }
 
         // GET: api/sdwans/5
         [ResponseType(typeof(sdwan))]
-        public IHttpActionResult Getsdwan(int id)
+        public IHttpActionResult Getsdwan(int id, string token)
         {
             sdwan sdwan = db.sdwans.Find(id);
             if (sdwan == null)
@@ -37,7 +37,7 @@ namespace ITAssetManagement.Controllers
 
         // PUT: api/sdwans/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putsdwan(int id, sdwan sdwan)
+        public IHttpActionResult Putsdwan(int id, sdwan sdwan, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -70,24 +70,64 @@ namespace ITAssetManagement.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/sdwans
+        //---------------------------------------------- POST: api/sdwans Start-------------------------------------------------
         [ResponseType(typeof(sdwan))]
-        public IHttpActionResult Postsdwan(sdwan sdwan)
+        [HttpPost]
+        [Route("api/sdwans")]
+        public IHttpActionResult Postsdwan(sdwan sdwan, string token)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Check if the firewall_id, sdwanlaptop_id, or router_id is already assigned
+                var existingFirewall = db.sdwans.Any(f => f.firewall_id == sdwan.firewall_id);
+                var existingLaptop = db.sdwans.Any(l => l.sdwanlaptop_id == sdwan.sdwanlaptop_id);
+                var existingRouter = db.sdwans.Any(r => r.router_id == sdwan.router_id);
+
+                if (existingFirewall || existingLaptop || existingRouter)
+                {
+                    var errorMessage = "Conflict .";
+                    if (existingFirewall )
+                    {
+                        errorMessage += " Firewall already assigned.";
+                    }
+                    if (existingLaptop)
+                    {
+                        errorMessage += " SDWAN laptop already assigned.";
+                    }
+                    if (existingRouter)
+                    {
+                        errorMessage += " Router already assigned.";
+                    }
+                    return Content(HttpStatusCode.Conflict, new { message = errorMessage });
+                }
+
+
+
+                // If none of the devices are already assigned, proceed to add the SDWAN
+                db.sdwans.Add(sdwan);
+                db.SaveChanges();
+
+                // Return success message
+                return Content(HttpStatusCode.Created, new { message = "SDWAN created successfully.", sdwan = sdwan });
             }
-
-            db.sdwans.Add(sdwan);
-            db.SaveChanges();
-
-            return CreatedAtRoute("DefaultApi", new { id = sdwan.id }, sdwan);
+            catch (Exception ex)
+            {
+                // Return InternalServerError response with the error message
+                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the SDWAN.", error = ex.Message });
+            }
         }
+
+
+        //---------------------------------------------- POST: api/sdwans END-------------------------------------------------
 
         // DELETE: api/sdwans/5
         [ResponseType(typeof(sdwan))]
-        public IHttpActionResult Deletesdwan(int id)
+        public IHttpActionResult Deletesdwan(int id, string token)
         {
             sdwan sdwan = db.sdwans.Find(id);
             if (sdwan == null)

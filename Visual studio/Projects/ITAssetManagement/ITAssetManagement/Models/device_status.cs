@@ -8,7 +8,8 @@ namespace ITAssetManagement.Models
 
     public partial class device_status
     {
-         
+       
+
         public int id { get; set; }
 
         [Required]
@@ -23,6 +24,6 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-        
+       
     }
 }

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Description;
 using ITAssetManagement.Models;
+
+using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+
 using System.Web;
 
 namespace ITAssetManagement.Controllers
@@ -71,7 +72,5 @@ namespace ITAssetManagement.Controllers
             db.Entry(model).Property("date_created").IsModified = false;
         }
 
-
     }
 }
-

@@ -11,6 +11,13 @@ namespace ITAssetManagement.Models
             : base("name=ITAssetManagementDB")
         {
         }
+        public virtual DbSet<cpu_invoice> cpu_invoice { get; set; }
+        public virtual DbSet<laptop_invoice> laptop_invoice { get; set; }
+        public virtual DbSet<loan_out_laptop> loan_out_laptop { get; set; }
+        public virtual DbSet<monitor_invoice> monitor_invoice { get; set; }
+        public virtual DbSet<sign_out_desktop_cpu> sign_out_desktop_cpu { get; set; }
+        public virtual DbSet<sign_out_desktop_monitor> sign_out_desktop_monitor { get; set; }
+        public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; }
 
         public virtual DbSet<assigned_desktops> assigned_desktops { get; set; }
         public virtual DbSet<assigned_laptops> assigned_laptops { get; set; }
@@ -35,71 +42,13 @@ namespace ITAssetManagement.Models
         public virtual DbSet<trailing_loaned_laptops> trailing_loaned_laptops { get; set; }
         public virtual DbSet<trailing_loaned_sdwans> trailing_loaned_sdwans { get; set; }
         public virtual DbSet<user> users { get; set; }
-        public virtual DbSet<cpu_invoice> cpu_invoice { get; set; }
-        public virtual DbSet<laptop_invoice> laptop_invoice { get; set; }
-        public virtual DbSet<loan_out_laptop> loan_out_laptop { get; set; }
-        public virtual DbSet<monitor_invoice> monitor_invoice { get; set; }
-        public virtual DbSet<sign_out_desktop_cpu> sign_out_desktop_cpu { get; set; }
-        public virtual DbSet<sign_out_desktop_monitor> sign_out_desktop_monitor { get; set; }
-        public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            
-
-            modelBuilder.Entity<desktop_cpus>()
-                .Property(e => e.brand_name)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_cpus>()
-                .Property(e => e.model)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_cpus>()
-                .Property(e => e.cpu_serial_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_cpus>()
-                .Property(e => e.cpu_tag_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_cpus>()
-                .Property(e => e.comments)
-                .IsUnicode(false);
-
-            
-
-            modelBuilder.Entity<desktop_monitors>()
-                .Property(e => e.brand_name)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_monitors>()
-                .Property(e => e.model)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_monitors>()
-                .Property(e => e.monitor_serial_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_monitors>()
-                .Property(e => e.monitor_tag_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<desktop_monitors>()
-                .Property(e => e.comments)
-                .IsUnicode(false);
-
-           
-
-            modelBuilder.Entity<device_status>()
-                .Property(e => e.name)
-                .IsUnicode(false);
-
-            
 
             modelBuilder.Entity<firewall>()
-                .Property(e => e.tag_number)
-                .IsUnicode(false);
+               .Property(e => e.tag_number)
+               .IsUnicode(false);
 
             modelBuilder.Entity<firewall>()
                 .Property(e => e.serial_number)
@@ -111,43 +60,6 @@ namespace ITAssetManagement.Models
 
             modelBuilder.Entity<firewall>()
                 .Property(e => e.comments)
-                .IsUnicode(false);
-
-            
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.brand_name)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.serial_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.tag_number)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.model)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.comments)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<laptop>()
-                .Property(e => e.type)
-                .IsFixedLength()
-                .IsUnicode(false);
-
-            
-
-            modelBuilder.Entity<loaned_laptops>()
-                .Property(e => e.descriptions)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<loaned_sdwans>()
-                .Property(e => e.descriptions)
                 .IsUnicode(false);
 
             modelBuilder.Entity<router_mtc>()
@@ -189,6 +101,91 @@ namespace ITAssetManagement.Models
             modelBuilder.Entity<sdwan>()
                 .Property(e => e.description)
                 .IsUnicode(false);
+            modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.brand_name)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.model)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.cpu_serial_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.cpu_tag_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.comments)
+                .IsUnicode(false);
+
+           
+
+            modelBuilder.Entity<desktop_monitors>()
+                .Property(e => e.brand_name)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_monitors>()
+                .Property(e => e.model)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_monitors>()
+                .Property(e => e.monitor_serial_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_monitors>()
+                .Property(e => e.monitor_tag_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<desktop_monitors>()
+                .Property(e => e.comments)
+                .IsUnicode(false);
+
+           
+
+            modelBuilder.Entity<device_status>()
+                .Property(e => e.name)
+                .IsUnicode(false);
+
+           
+
+            
+
+           
+
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.brand_name)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.serial_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.tag_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.model)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.comments)
+                .IsUnicode(false);
+
+           
+
+            modelBuilder.Entity<loaned_laptops>()
+                .Property(e => e.descriptions)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<loaned_sdwans>()
+                .Property(e => e.descriptions)
+                .IsUnicode(false);
+
+            
 
              
 
@@ -216,11 +213,8 @@ namespace ITAssetManagement.Models
                 .Property(e => e.email)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<user>()
-               .Property(e => e.token)
-               .IsUnicode(false);
 
-
+            
         }
     }
 }

@@ -30,7 +30,7 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-        [StringLength(255)]
+        [StringLength(50)]
         public string token { get; set; }
     }
 }

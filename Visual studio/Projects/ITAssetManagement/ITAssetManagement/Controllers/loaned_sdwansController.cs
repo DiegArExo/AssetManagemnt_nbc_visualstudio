@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/loaned_sdwans
-        public IQueryable<loaned_sdwans> Getloaned_sdwans()
+        public IQueryable<loaned_sdwans> Getloaned_sdwans(string token)
         {
             return db.loaned_sdwans;
         }
 
         // GET: api/loaned_sdwans/5
         [ResponseType(typeof(loaned_sdwans))]
-        public IHttpActionResult Getloaned_sdwans(int id)
+        public IHttpActionResult Getloaned_sdwans(int id, string token)
         {
             loaned_sdwans loaned_sdwans = db.loaned_sdwans.Find(id);
             if (loaned_sdwans == null)
@@ -37,7 +37,7 @@ namespace ITAssetManagement.Controllers
 
         // PUT: api/loaned_sdwans/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putloaned_sdwans(int id, loaned_sdwans loaned_sdwans)
+        public IHttpActionResult Putloaned_sdwans(int id, loaned_sdwans loaned_sdwans, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -73,7 +73,7 @@ namespace ITAssetManagement.Controllers
 
         // POST: api/loaned_sdwans
         [ResponseType(typeof(loaned_sdwans))]
-        public IHttpActionResult Postloaned_sdwans(loaned_sdwans loaned_sdwans)
+        public IHttpActionResult Postloaned_sdwans(loaned_sdwans loaned_sdwans, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace ITAssetManagement.Controllers
 
         // DELETE: api/loaned_sdwans/5
         [ResponseType(typeof(loaned_sdwans))]
-        public IHttpActionResult Deleteloaned_sdwans(int id)
+        public IHttpActionResult Deleteloaned_sdwans(int id, string token)
         {
             loaned_sdwans loaned_sdwans = db.loaned_sdwans.Find(id);
             if (loaned_sdwans == null)

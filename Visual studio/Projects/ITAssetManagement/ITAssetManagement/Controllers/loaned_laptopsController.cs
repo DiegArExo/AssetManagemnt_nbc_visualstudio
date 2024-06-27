@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/loaned_laptops
-        public IQueryable<loaned_laptops> Getloaned_laptops()
+        public IQueryable<loaned_laptops> Getloaned_laptops(string token)
         {
             return db.loaned_laptops;
         }
 
         // GET: api/loaned_laptops/5
         [ResponseType(typeof(loaned_laptops))]
-        public IHttpActionResult Getloaned_laptops(int id)
+        public IHttpActionResult Getloaned_laptops(int id, string token)
         {
             loaned_laptops loaned_laptops = db.loaned_laptops.Find(id);
             if (loaned_laptops == null)
@@ -34,9 +34,45 @@ namespace ITAssetManagement.Controllers
 
             return Ok(loaned_laptops);
         }
-        [HttpGet]
+
+        // PUT: api/loaned_laptops/5
+        [ResponseType(typeof(void))]
+        public IHttpActionResult Putloaned_laptops(int id, loaned_laptops loaned_laptops, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (id != loaned_laptops.id)
+            {
+                return BadRequest();
+            }
+
+            db.Entry(loaned_laptops).State = EntityState.Modified;
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!loaned_laptopsExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            //return StatusCode(HttpStatusCode.NoContent);
+            return Ok(loaned_laptops);
+        }
+        //----------------------------------------- GET LAPTOP AND THER USER WHO LOANED IT START -----------------------------------------------------------------
         [Route("api/loaned_laptops_with_users_and_laptops")]
-        public IHttpActionResult GetLoanedLaptopsWithUsersAndLaptops(int loaned_laptop_id)
+        public IHttpActionResult GetLoanedLaptopsWithUsersAndLaptops(int loaned_laptop_id, string token)
         {
             try
             {
@@ -78,46 +114,27 @@ namespace ITAssetManagement.Controllers
             }
         }
 
+        //----------------------------------------- GET LAPTOP AND THER USER WHO LOANED IT END -----------------------------------------------------------------
 
-        // PUT: api/loaned_laptops/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult Putloaned_laptops(int id, loaned_laptops loaned_laptops)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //// POST: api/loaned_laptops
+        //[ResponseType(typeof(loaned_laptops))]
+        //public IHttpActionResult Postloaned_laptops(loaned_laptops loaned_laptops)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            if (id != loaned_laptops.id)
-            {
-                return BadRequest();
-            }
+        //    db.loaned_laptops.Add(loaned_laptops);
+        //    db.SaveChanges();
 
-            db.Entry(loaned_laptops).State = EntityState.Modified;
+        //    return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
+        //}
 
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!loaned_laptopsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            //return StatusCode(HttpStatusCode.NoContent);
-            return Ok(loaned_laptops);
-        }
-
-        //-------------------------------------------------------------- POST: api/loaned_laptops ------------------------------------------------------------------------------
+        //-------------------------------------------------LOANING A COMPUTER TO A USER START-------------------------------------------------------------------------
+        // POST: api/loaned_laptops
         [ResponseType(typeof(loaned_laptops))]
-        public IHttpActionResult Postloaned_laptops(LoanOut_laptopModel model)
+        public IHttpActionResult Postloaned_laptops(LoanOut_laptopModel model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -178,14 +195,14 @@ namespace ITAssetManagement.Controllers
 
 
                     // return CreatedAtRoute("DefaultApi", new { id = assigned_laptops.id }, assigned_laptops);
-                   // return Content(HttpStatusCode.Created, new { message = "Laptop loaned successfully.", loaned_laptops = loaned_laptops });
+                    // return Content(HttpStatusCode.Created, new { message = "Laptop loaned successfully.", loaned_laptops = loaned_laptops });
 
                     // Commiting a transaction this means that all transactions are made succefully made.
                     transaction.Commit();
 
 
                     // return CreatedAtRoute("DefaultApi", new { id = loaned_laptops.id }, loaned_laptops);
-                 
+
                     return Content(HttpStatusCode.Created, new { message = "Laptop Loaned successfully.", loaned_laptops = loaned_laptops });
                 }
                 catch (Exception ex)
@@ -198,53 +215,40 @@ namespace ITAssetManagement.Controllers
             }
         }
 
-        //-------------------------------------------------------------- POST: api/loaned_laptops End ------------------------------------------------------------------------------
+        //-------------------------------------------------LOANING A COMPUTER TO A USER EMD-------------------------------------------------------------------------
+
+        //-------------------------------------------------UN LOANING A COMPUTER TO A USER START-------------------------------------------------------------------------
 
         // DELETE: api/loaned_laptops/5
         [ResponseType(typeof(loaned_laptops))]
         [HttpDelete]
         [Route("api/loaned_laptops/unloan_user")]
-        public IHttpActionResult Deleteloaned_laptops(int laptop_loaned_id)
+        public IHttpActionResult Deleteloaned_laptops(int laptop_loaned_id, string token)
         {
             //Getting the value by Id
             var loaned_laptops = db.loaned_laptops.Where(a => a.loaned_laptop_id == laptop_loaned_id).ToList();
+
+
             if (loaned_laptops == null)
             {
                 return NotFound();
             }
-            using (var transaction = db.Database.BeginTransaction())
+            //Try and catch will help with error handing and avoidin the code from crahing. 
+            try
             {
-                //Try and catch will help with error handing and avoidin the code from crahing. 
-                try
-                {
-                    // Update device_status_id in laptops table
-                    var laptopsToUpdate = db.laptops.Where(l => l.id == laptop_loaned_id).ToList();
+                //Delete the record from the database
+                db.loaned_laptops.RemoveRange(loaned_laptops);
+                db.SaveChanges();
 
-                    foreach (var laptop in laptopsToUpdate)
-                    {
-                        laptop.device_status_id = 1;
-                        db.Entry(laptop).State = EntityState.Modified;
-                    }
-                    // Save The change in the Laptop table
-                    db.SaveChanges();
-
-                    //Delete the record from the database
-                    db.loaned_laptops.RemoveRange(loaned_laptops);
-                    // Save all the changes after deleting
-                    db.SaveChanges();
-
-                    // Commit the transaction to ensure that all the Operarions  worked
-                    transaction.Commit();
-
-                    return Ok(loaned_laptops);
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
+                return Ok(loaned_laptops);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
             }
         }
 
+        //-------------------------------------------------UN LOANING A COMPUTER TO A USER END-------------------------------------------------------------------------
         protected override void Dispose(bool disposing)
         {
             if (disposing)

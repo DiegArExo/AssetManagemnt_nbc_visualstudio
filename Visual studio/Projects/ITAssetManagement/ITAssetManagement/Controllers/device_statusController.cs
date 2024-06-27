@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/device_status
-        public IQueryable<device_status> Getdevice_status()
+        public IQueryable<device_status> Getdevice_status(string token)
         {
             return db.device_status;
         }
 
         // GET: api/device_status/5
         [ResponseType(typeof(device_status))]
-        public IHttpActionResult Getdevice_status(int id)
+        public IHttpActionResult Getdevice_status(int id, string token)
         {
             device_status device_status = db.device_status.Find(id);
             if (device_status == null)
@@ -37,7 +37,7 @@ namespace ITAssetManagement.Controllers
 
         // PUT: api/device_status/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putdevice_status(int id, device_status device_status)
+        public IHttpActionResult Putdevice_status(int id, device_status device_status, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -73,7 +73,7 @@ namespace ITAssetManagement.Controllers
 
         // POST: api/device_status
         [ResponseType(typeof(device_status))]
-        public IHttpActionResult Postdevice_status(device_status device_status)
+        public IHttpActionResult Postdevice_status(device_status device_status, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace ITAssetManagement.Controllers
 
         // DELETE: api/device_status/5
         [ResponseType(typeof(device_status))]
-        public IHttpActionResult Deletedevice_status(int id)
+        public IHttpActionResult Deletedevice_status(int id, string token)
         {
             device_status device_status = db.device_status.Find(id);
             if (device_status == null)

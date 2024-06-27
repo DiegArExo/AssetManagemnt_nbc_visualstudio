@@ -16,26 +16,24 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ITAssetManagement.Models;
-using Newtonsoft.Json;
-
 
 namespace ITAssetManagement.Controllers
 {
     public class laptopsController : ApiController
     {
-        private ITAssetManagementDB db = new ITAssetManagementDB(); 
+        private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/laptops
-        public IQueryable<laptop> Getlaptops()
+        public IQueryable<laptop> Getlaptops(string token)
         {
             return db.laptops;
         }
-       // (Loanable laptopes type is 1 and non-loanable is 0)
-       // API EndPoint to get all non loanable laptops. this are laptops that they can loan out to anyone*/
-       [ResponseType(typeof(laptop))]
+        // (Loanable laptopes type is 1 and non-loanable is 0)
+        // API EndPoint to get all non loanable laptops. this are laptops that they can loan out to anyone*/
+        [ResponseType(typeof(laptop))]
         [HttpGet]
-       [Route("api/laptops/get_non_loanable_laptops")]
-        public IHttpActionResult Getnonloanablelaptop()
+        [Route("api/laptops/get_non_loanable_laptops")]
+        public IHttpActionResult Getnonloanablelaptop(string token)
         {
             // Fetch non-loanable laptops from the database
             var non_loanable_laptop = db.laptops.Where(getType => getType.type == "0").ToList();
@@ -48,10 +46,8 @@ namespace ITAssetManagement.Controllers
 
             // Fetch non-loanable laptops along with their status from the database
             var non_loanable_laptop_with_status = from l_laptop in db.laptops
-
                                                   join d_device_status in db.device_status
                                                   on l_laptop.device_status_id equals d_device_status.id
-
                                                   where l_laptop.type == "0"
                                                   select new
                                                   {
@@ -65,8 +61,8 @@ namespace ITAssetManagement.Controllers
 
         [ResponseType(typeof(laptop))]
         [HttpGet]
-         [Route("api/laptops/get_loanable_laptops")]
-        public IHttpActionResult Getloanablelaptop()
+        [Route("api/laptops/get_loanable_laptops")]
+        public IHttpActionResult Getloanablelaptop(string token)
         {
             // Fetch non-loanable laptops from the database where type is "0"
             var non_loanable_laptop = db.laptops.Where(l => l.type == "1").ToList();
@@ -92,11 +88,9 @@ namespace ITAssetManagement.Controllers
             return Ok(loanable_laptop_with_status);
         }
 
-
-
         // GET: api/laptops/5
         [ResponseType(typeof(laptop))]
-        public IHttpActionResult GetLaptopWithStatus(int id)
+        public IHttpActionResult GetLaptopWithStatus(int id, string token)
         {
             var laptopWithStatus = (from laptop in db.laptops
                                     join status in db.device_status on laptop.device_status_id equals status.id
@@ -104,8 +98,8 @@ namespace ITAssetManagement.Controllers
                                     select new
                                     {
                                         Laptops = laptop,
-                           
-                                        status.name 
+
+                                        status.name
                                     }).FirstOrDefault();
 
             if (laptopWithStatus == null)
@@ -116,9 +110,10 @@ namespace ITAssetManagement.Controllers
             return Ok(laptopWithStatus);
         }
 
+
         // PUT: api/laptops/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putlaptop(int id, laptop laptop)
+        public IHttpActionResult Putlaptop(int id, laptop laptop, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -149,8 +144,8 @@ namespace ITAssetManagement.Controllers
                 existingLaptops.device_status_id = laptop.device_status_id;
             }
 
-           // existingLaptops.type = laptop.type;
-           // existingLaptops.device_status_id = laptop.device_status_id;
+            // existingLaptops.type = laptop.type;
+            // existingLaptops.device_status_id = laptop.device_status_id;
 
             //Insert in the date updated
             laptop.date_updated = DateTime.Now;
@@ -182,78 +177,12 @@ namespace ITAssetManagement.Controllers
             return Ok(laptop);
         }
 
-        //--------------------------------------------- api/laptops/write_off_laptops/{id}----------------------------------------------
 
-        [ResponseType(typeof(void))]
-        [HttpPut]
-        [Route("api/laptops/write_off_laptops/{id}")]
-        public IHttpActionResult PutWriteOffLaptop(int id, laptop laptop)
-        {
-            if (!ModelState.IsValid)
-            {
-                return Content(HttpStatusCode.BadRequest, ModelState);
-            }
-            if (id != laptop.id)
-            {
-                return BadRequest();
-            }
-
-            // Retrieve the existing entity from the database
-            var existingLaptop = db.laptops.Find(id);
-            if (existingLaptop == null)
-            {
-                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
-            }
-
-            // Preserve fields that should not be changed
-            laptop.date_created = existingLaptop.date_created;
-            laptop.type = existingLaptop.type;
-            laptop.device_status_id = existingLaptop.device_status_id;
-            laptop.user_assigned_id = existingLaptop.user_assigned_id;
-            laptop.user_created = existingLaptop.user_created;
-
-            // Always update the date_updated field
-            laptop.date_updated = DateTime.Now;
-            // Update device_status_id for the laptop
-            laptop.device_status_id = 5;
-            
-            db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!laptopExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            catch (DbUpdateException ex)
-            {
-                var innerException = ex.InnerException?.InnerException;
-                return InternalServerError(innerException ?? ex);
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-
-            return Ok(existingLaptop); // Return the updated laptop data
-        }
-        //---------------------------------------------POST LAPTOP INFORMATION----------------------------------------------
-
-        // POST: api/laptops
-
+        //------------------------------------------------------ POST: (POST laptop) Start----------------------------
         [ResponseType(typeof(laptop))]
         [HttpPost]
         [Route("api/laptops")]
-        public IHttpActionResult Postlaptop(LaptopInvoiceModel model)
+        public IHttpActionResult Postlaptop(LaptopInvoiceModel model, string token)
         {
             // Check if the model state is valid
             if (!ModelState.IsValid)
@@ -284,7 +213,7 @@ namespace ITAssetManagement.Controllers
                     db.laptop_invoice.Add(laptopInvoice);
                     db.SaveChanges();
 
-                   
+
                     transaction.Commit();
 
                     // Return OK response with the added laptop data
@@ -304,12 +233,81 @@ namespace ITAssetManagement.Controllers
             }
         }
 
+        //------------------------------------------------------ POST: (POST laptop) Start----------------------------
 
 
+
+
+        //-----------------------------------------------WRITE-OFF A LAPTOP START----------------------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/laptops/write_off_laptops/{id}")]
+        public IHttpActionResult PutWriteOffLaptop(int id, laptop laptop, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Content(HttpStatusCode.BadRequest, ModelState);
+            }
+            if (id != laptop.id)
+            {
+                return BadRequest();
+            }
+
+            // Retrieve the existing entity from the database
+            var existingLaptop = db.laptops.Find(id);
+            if (existingLaptop == null)
+            {
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
+            }
+
+            // Preserve fields that should not be changed
+            laptop.date_created = existingLaptop.date_created;
+            laptop.type = existingLaptop.type;
+            laptop.device_status_id = existingLaptop.device_status_id;
+            laptop.user_assigned_id = existingLaptop.user_assigned_id;
+            laptop.user_created = existingLaptop.user_created;
+
+            // Always update the date_updated field
+            laptop.date_updated = DateTime.Now;
+            // Update device_status_id for the laptop
+            laptop.device_status_id = 5;
+
+
+
+            db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!laptopExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+            return Ok(existingLaptop); // Return the updated laptop data
+        }
+        //-----------------------------------------------WRITE-OFF A LAPTOP END------------------------------------------------------------------
 
         // DELETE: api/laptops/5
         [ResponseType(typeof(laptop))]
-        public IHttpActionResult Deletelaptop(int id)
+        public IHttpActionResult Deletelaptop(int id, string token)
         {
             laptop laptop = db.laptops.Find(id);
             if (laptop == null)

@@ -20,7 +20,7 @@ namespace ITAssetManagement.Models
 
         public int? user_update { get; set; }
 
-        public DateTime date_created { get; set; }
+        public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
     }

@@ -9,6 +9,7 @@ namespace ITAssetManagement.Models
     public partial class laptop
     {
         
+
         public int id { get; set; }
 
         [Required]
@@ -33,8 +34,6 @@ namespace ITAssetManagement.Models
         [MaxLength]
         public string attachment { get; set; }
 
-        [Required]
-        [StringLength(1)]
         public string type { get; set; }
 
         public int? device_status_id { get; set; }

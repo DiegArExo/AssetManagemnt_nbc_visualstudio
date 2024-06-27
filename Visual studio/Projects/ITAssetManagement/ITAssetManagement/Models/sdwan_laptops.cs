@@ -29,7 +29,11 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string comments { get; set; }
 
-        public byte[] attachment { get; set; }
+        [MaxLength]
+        public string invoice { get; set; }
+
+        [MaxLength]
+        public string attachment { get; set; }
 
         public int status_id { get; set; }
 
@@ -40,7 +44,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-       
     }
 }

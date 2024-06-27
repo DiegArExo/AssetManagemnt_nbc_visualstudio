@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/desktop_monitors
-        public IQueryable<desktop_monitors> Getdesktop_monitors()
+        public IQueryable<desktop_monitors> Getdesktop_monitors(string token)
         {
             return db.desktop_monitors;
         }
 
         // GET: api/desktop_monitors/5
         [ResponseType(typeof(desktop_monitors))]
-        public IHttpActionResult Getdesktop_monitors(int id)
+        public IHttpActionResult Getdesktop_monitors(int id, string token)
         {
             desktop_monitors desktop_monitors = db.desktop_monitors.Find(id);
             if (desktop_monitors == null)
@@ -34,39 +34,10 @@ namespace ITAssetManagement.Controllers
 
             return Ok(desktop_monitors);
         }
-        //------------------ GET MONITOR INFORMATION WITH STATUS NAME START ------------------------
-        [ResponseType(typeof(desktop_monitors))]
-        [HttpGet]
-        [Route("api/desktop_monitors/get_monitors")]
-        public IHttpActionResult Getmonitor()
-        {
-           
-            // Fetch non-loanable laptops along with their status from the database
-            var getmonitor = from l_monitor in db.desktop_monitors
-
-                                                  join d_device_status in db.device_status
-                                                  on l_monitor.status_id equals d_device_status.id
-
-                                                  select new
-                                                  {
-                                                      l_monitor.id,
-                                                      l_monitor.brand_name,
-                                                      l_monitor.model,
-                                                      l_monitor.monitor_serial_number,
-                                                      l_monitor.monitor_tag_number,
-                                                   
-                                                      // Get all laptop details
-                                                      monitor_StatusName = d_device_status.name // Get the status name
-                                                  };
-
-            // Return the result with the status included
-            return Ok(getmonitor);
-        }
-        //------------------ GET MONITOR INFORMATION WITH STATUS NAME END ------------------------
 
         // PUT: api/desktop_monitors/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putdesktop_monitors(int id, desktop_monitors desktop_monitors)
+        public IHttpActionResult Putdesktop_monitors(int id, desktop_monitors desktop_monitors, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -92,12 +63,14 @@ namespace ITAssetManagement.Controllers
             try
             {
                 db.SaveChanges();
+                return Content(HttpStatusCode.Created, new { message = "Monitor information successfully Updated.", desktop_monitors = desktop_monitors });
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!desktop_monitorsExists(id))
                 {
-                    return NotFound();
+                   // return NotFound();
+                    return Content(HttpStatusCode.NotFound, new { message = "Monitor with the provided ID was not found." });
                 }
                 else
                 {
@@ -108,12 +81,15 @@ namespace ITAssetManagement.Controllers
             {
                 // Log the inner exception
                 var innerException = ex.InnerException?.InnerException;
-                return InternalServerError(innerException ?? ex);
+               // return InternalServerError(innerException ?? ex);
+                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
             }
 
             //return StatusCode(HttpStatusCode.NoContent);
-            return Ok(desktop_monitors);
+           // return Ok(desktop_monitors);
         }
+
+
 
 
         //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR START)----------------------------------------------
@@ -121,7 +97,7 @@ namespace ITAssetManagement.Controllers
         [ResponseType(typeof(void))]
         [HttpPut]
         [Route("api/monitor/write_off_monitor/{id}")]
-        public IHttpActionResult PutWriteOffMonitor(int id, desktop_monitors desktop_monitors)
+        public IHttpActionResult PutWriteOffMonitor(int id, desktop_monitors desktop_monitors, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -157,6 +133,7 @@ namespace ITAssetManagement.Controllers
             try
             {
                 db.SaveChanges();
+                return Content(HttpStatusCode.Created, new { message = "Monitor successfully written-off.", desktop_monitors = desktop_monitors });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -176,20 +153,57 @@ namespace ITAssetManagement.Controllers
             }
             catch (Exception ex)
             {
-                return InternalServerError(ex);
+               // return InternalServerError(ex);
+                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
             }
-
             return Ok(existingMonitor); // Return the updated laptop data
         }
         //--------------------------------------------- api/laptops/write_off_laptops/{id} (WRITEOFF MONITOR END)----------------------------------------------
 
 
+        //------------------------------------------------------ GET MONITOR INFORMATION WITH STATUS NAME START ------------------------------------------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/get_monitors")]
+        public IHttpActionResult Getmonitor(string token)
+        {
+            try
+            {
 
+                // Fetch non-loanable laptops along with their status from the database
+                var getmonitor = from l_monitor in db.desktop_monitors
+
+                                 join d_device_status in db.device_status
+                                 on l_monitor.status_id equals d_device_status.id
+
+                                 select new
+                                 {
+                                     l_monitor.id,
+                                     l_monitor.brand_name,
+                                     l_monitor.model,
+                                     l_monitor.monitor_serial_number,
+                                     l_monitor.monitor_tag_number,
+
+                                     
+                                     monitor_StatusName = d_device_status.name  
+                                 };
+                return Ok(getmonitor);
+            }
+            catch (Exception ex)
+            {
+   
+                return InternalServerError(ex);  
+            }
+
+            // Return the result with the status included
+          
+        }
+        //------------------------------------------------------ GET MONITOR INFORMATION WITH STATUS NAME END ---------------------------------------------------------------------
 
         // PUT: api/desktop_monitors/5
         [ResponseType(typeof(void))]
-        [Route("api/desktop_monitors/write_off/update/{id}")]
-        public IHttpActionResult Putdesktop_monitors_write_off(int id, desktop_monitors desktop_monitors)
+        [Route("api/desktop_monitor/write_off/update/{id}")]
+        public IHttpActionResult Putdesktop_monitors_write_off(int id, desktop_monitors desktop_monitors, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -206,7 +220,7 @@ namespace ITAssetManagement.Controllers
             //Defining Tableas that needs to be updated 
             existingDesktopsMonitors.comments = desktop_monitors.comments;
             existingDesktopsMonitors.attachment = desktop_monitors.attachment;
- 
+
 
 
             db.Entry(existingDesktopsMonitors).State = EntityState.Modified;
@@ -236,9 +250,11 @@ namespace ITAssetManagement.Controllers
             //return StatusCode(HttpStatusCode.NoContent);
             return Ok(desktop_monitors);
         }
+
+
         //------------------------------------------------------------------------------------------------POST: api/desktop_monitors start-------------------------------------------------------
         [ResponseType(typeof(desktop_monitors))]
-        public IHttpActionResult Postdesktop_monitors(MonitoInvoiceModel model)
+        public IHttpActionResult Postdesktop_monitors(MonitoInvoiceModel model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -260,7 +276,7 @@ namespace ITAssetManagement.Controllers
                     {
                         monitor_id = desktop_monitors.id,
                         invoice_document = model.Invoice_monitor,
-                        user_created = desktop_monitors.user_created ?? 0,
+                        user_created = desktop_monitors.user_created,
                         date_created = DateTime.Now
                     };
                     // Save data in the invoice table to store the invoice documents
@@ -290,9 +306,10 @@ namespace ITAssetManagement.Controllers
 
         //------------------------------------------------------------------------------------------------POST: api/desktop_monitors End-------------------------------------------------------
 
+
         // DELETE: api/desktop_monitors/5
         [ResponseType(typeof(desktop_monitors))]
-        public IHttpActionResult Deletedesktop_monitors(int id)
+        public IHttpActionResult Deletedesktop_monitors(int id, string token)
         {
             desktop_monitors desktop_monitors = db.desktop_monitors.Find(id);
             if (desktop_monitors == null)

@@ -17,14 +17,14 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/joined_desktops_monitors
-        public IQueryable<joined_desktops_monitors> Getjoined_desktops_monitors()
+        public IQueryable<joined_desktops_monitors> Getjoined_desktops_monitors(string token)
         {
             return db.joined_desktops_monitors;
         }
 
         // GET: api/joined_desktops_monitors/5
         [ResponseType(typeof(joined_desktops_monitors))]
-        public IHttpActionResult Getjoined_desktops_monitors(int id)
+        public IHttpActionResult Getjoined_desktops_monitors(int id, string token)
         {
             joined_desktops_monitors joined_desktops_monitors = db.joined_desktops_monitors.Find(id);
             if (joined_desktops_monitors == null)
@@ -38,7 +38,7 @@ namespace ITAssetManagement.Controllers
         //------------------------------------ PUT UNASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO ZERO(0)--------------------------------------------------
         [ResponseType(typeof(void))]
         [Route("api/joined_desktops_monitors/update_monitor")]
-        public IHttpActionResult Putjoined_desktops_monitor(int id, joined_desktops_monitors joined_desktops_monitors)
+        public IHttpActionResult Putjoined_desktops_monitor(int id, joined_desktops_monitors joined_desktops_monitors, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -82,7 +82,7 @@ namespace ITAssetManagement.Controllers
             {
                 // Log the inner exception
                 var innerException = ex.InnerException?.InnerException;
-                
+
                 return InternalServerError(new Exception("An error occurred while saving desktop CPUs information.", innerException ?? ex));
             }
             catch (Exception ex)
@@ -92,12 +92,11 @@ namespace ITAssetManagement.Controllers
         }
         //------------------------------------ PUT UNASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO ZERO(0)--------------------------------------------------
 
-
         //------------------------------------ PUT ASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO THE GIVEN MONITOR ID--------------------------------------------------
-     
+
         [ResponseType(typeof(void))]
         [Route("api/joined_desktops_monitors/assign_monitor_to_user")]
-        public IHttpActionResult Putjoined_desktops_monitor_assign(int id, SignOut_DesktopMonitor model)
+        public IHttpActionResult Putjoined_desktops_monitor_assign(int id, SignOut_DesktopMonitor model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -116,7 +115,7 @@ namespace ITAssetManagement.Controllers
                         return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
                     }
 
-                 
+
 
 
                     // Update the existing entity
@@ -141,7 +140,8 @@ namespace ITAssetManagement.Controllers
                     // Commit the transaction
                     transaction.Commit();
 
-                    return Ok(new { message = "Record updated and monitor signed out successfully." });
+                    //return Ok(new { message = "Record updated and monitor signed out successfully." });
+                    return Content(HttpStatusCode.Created, new { message = "Record updated and monitor signed out successfully.", joined_desktops_monitors = joined_desktops_monitors });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -172,65 +172,11 @@ namespace ITAssetManagement.Controllers
 
         //------------------------------------ PUT ASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO THE GIVEN MONITOR ID--------------------------------------------------
 
-        //--------------------------------------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO ZERO(0) ----------------------------------
-        [ResponseType(typeof(void))]
-        [Route("api/joined_desktops_monitors/update_cpu")]
-        public IHttpActionResult Putjoined_desktops_cpu(int id, joined_desktops_monitors joined_desktops_monitors)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-
-            // Retrieve the existing entity from the database
-            var existingJoinedDesktopsCPU = db.joined_desktops_monitors.Find(id);
-            if (existingJoinedDesktopsCPU == null)
-            {
-                //return NotFound();
-                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
-            }
-
-            // Update only the fields that need to be changed
-
-            existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
-
-
-            db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
-
-            //Try and Catch Error to avoid the code from crashing.
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!joined_desktops_monitorsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            catch (DbUpdateException ex)
-            {
-                // Log the inner exception
-                var innerException = ex.InnerException?.InnerException;
-                return InternalServerError(innerException ?? ex);
-            }
-
-            return Ok(joined_desktops_monitors);
-        }
-        //---------------------------- ----------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO ZERO(0) ----------------------------------
-
-
 
         //--------------------------------------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO GIVEN CPU ID ----------------------------------
         [ResponseType(typeof(void))]
         [Route("api/joined_desktops_monitors/assign_update_cpu")]
-        public IHttpActionResult Putjoined_desktops_cpu(int id, SignOut_Desktop_CpuModel model)
+        public IHttpActionResult Putjoined_desktops_cpu(int id, SignOut_Desktop_CpuModel model, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -302,18 +248,73 @@ namespace ITAssetManagement.Controllers
             }
         }
 
-        //---------------------------- ----------------------------  PUT: ASSIGNING A CPU FROM THE JOINED TABLE: WE UPDATE THE CPU ID TO GIVEN CPU ID  ----------------------------------
 
 
 
+        // PUT: api/joined_desktops_monitors/update_monitor/5
+        [ResponseType(typeof(void))]
+        [Route("api/joined_desktops_monitors/update_cpu")]
+        public IHttpActionResult Putjoined_desktops_cpu(int id, joined_desktops_monitors joined_desktops_monitors, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
 
+            // Retrieve the existing entity from the database
+            var existingJoinedDesktopsCPU = db.joined_desktops_monitors.Find(id);
+            if (existingJoinedDesktopsCPU == null)
+            {
+                //return NotFound();
+                return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+            }
 
+            // Update only the fields that need to be changed
 
+            existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
+
+            // existingJoinedDesktopsMonitors.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
+            // existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
+            // existingJoinedDesktopsMonitors.user_assigned_id = updatedJoinedDesktopsMonitors.user_assigned_id;
+            // existingJoinedDesktopsMonitors.user_updated = joined_desktops_monitors.user_updated;
+            // existingJoinedDesktopsMonitors.date_created = joined_desktops_monitors.date_created;
+            // existingJoinedDesktopsMonitors.date_updated = joined_desktops_monitors.date_updated;
+
+            // This code will update the date updated to the current one
+            // existingJoinedDesktopsMonitors.date_updated = DateTime.UtcNow;  
+
+            db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
+
+            //Try and Catch Error to avoid the code from crashing.
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!joined_desktops_monitorsExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the inner exception
+                var innerException = ex.InnerException?.InnerException;
+                return InternalServerError(innerException ?? ex);
+            }
+
+            return Ok(joined_desktops_monitors);
+        }
 
         //---------------------------------------------------------------POST: api/joined_cpu_monitors start ------------------------------------------------
         [ResponseType(typeof(joined_desktops_monitors))]
-        public IHttpActionResult Postjoined_desktops_monitors(joined_desktops_monitors joined_desktops_monitors)
+        public IHttpActionResult Postjoined_desktops_monitors(joined_desktops_monitors joined_desktops_monitors, string token)
         {
             if (!ModelState.IsValid)
             {
@@ -325,7 +326,7 @@ namespace ITAssetManagement.Controllers
                 db.joined_desktops_monitors.Add(joined_desktops_monitors);
                 db.SaveChanges();
 
-               // return CreatedAtRoute("DefaultApi", new { id = joined_desktops_monitors.id }, joined_desktops_monitors);
+                // return CreatedAtRoute("DefaultApi", new { id = joined_desktops_monitors.id }, joined_desktops_monitors);
                 return Content(HttpStatusCode.Created, new { message = "Desktop Station created successfully.", assigned_desktops = joined_desktops_monitors });
             }
             catch (DbUpdateException ex)
@@ -346,7 +347,7 @@ namespace ITAssetManagement.Controllers
 
         // DELETE: api/joined_desktops_monitors/5
         [ResponseType(typeof(joined_desktops_monitors))]
-        public IHttpActionResult Deletejoined_desktops_monitors(int id)
+        public IHttpActionResult Deletejoined_desktops_monitors(int id, string token)
         {
             joined_desktops_monitors joined_desktops_monitors = db.joined_desktops_monitors.Find(id);
             if (joined_desktops_monitors == null)

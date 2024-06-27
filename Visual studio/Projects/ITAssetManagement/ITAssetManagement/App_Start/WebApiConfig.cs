@@ -25,8 +25,6 @@ namespace ITAssetManagement
             string origin = "*";
             EnableCorsAttribute cors = new EnableCorsAttribute(origin, "*", "*");
             config.EnableCors(cors);
-
-
         }
     }
 }

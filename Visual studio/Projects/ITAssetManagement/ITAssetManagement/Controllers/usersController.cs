@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ITAssetManagement.Models;
+
 using System.DirectoryServices.AccountManagement; // To interact with the active diretory we need to include this
 using System.Security.Cryptography;
 using ITAssetManagement.Controllers;
@@ -19,17 +20,20 @@ namespace ITAssetManagement.Controllers
     public class usersController : ApiController
     {
         private ITAssetManagementDB db = new ITAssetManagementDB();
-        private NbcController nbcController = new NbcController();
 
-        // GET: api/users
-        public IQueryable<user> GetAllusers()
+      
+       private NbcController nbcController = new NbcController();
+
+        //------------------------------------------ GET: api/users(GET ALL THE USERS)----------------------------------------
+        public IQueryable<user> GetAllusers(string token)
         {
-            //if (nbcController.validate_token(token))
-            //{
-            //    throw new Exception("401");
-            //}
+            if (nbcController.validate_token(token))
+            {
+               throw new Exception("401");
+            }
             return db.users;
         }
+
         [Route("api/test_connectivity")]
         public bool Connectivity()
         {
@@ -61,31 +65,32 @@ namespace ITAssetManagement.Controllers
         }
 
 
+
         // --------------------------------------------------------------------------------------------GET: api/users/5------------------------------------------------------------------------------------------------
 
-       /* [ResponseType(typeof(user))]
-        public IHttpActionResult Getuser(int id, string token)
-        {
-            if (nbcController.validate_token(token))
-            {
-                throw new Exception("401");
-            }
-            user user = db.users.Find(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+        //[ResponseType(typeof(user))]
+        // public IHttpActionResult Getuser(int id, string token)
+        // {
+        //     if (nbcController.validate_token(token))
+        //     {
+        //         throw new Exception("401");
+        //     }
+        //     user user = db.users.Find(id);
+        //     if (user == null)
+        //     {
+        //         return NotFound();
+        //     }
 
-            return Ok(user);
-        }*/
+        //     return Ok(user);
+        // }
 
         [ResponseType(typeof(user))]
-        public IHttpActionResult Getuser(int id)
+        public IHttpActionResult Getuser(int id, string token)
         {
-             
-            user user = db.users.Find(id);
-            if (user == null)
-            {
+
+           user user = db.users.Find(id);
+           if (user == null)
+           {
                 return NotFound();
             }
 
@@ -138,9 +143,9 @@ namespace ITAssetManagement.Controllers
 
         // ------- POST: api/users. Get all the user in the database but make sure that the user has a token
         [ResponseType(typeof(user))]
-        public IHttpActionResult Postuser(user user)
+        public IHttpActionResult Postuser(user user, string token)
         {
-            if (!ModelState.IsValid || nbcController.validate_token(user.token))
+            if (!ModelState.IsValid ||nbcController.validate_token(user.token))
             {
                 return BadRequest(ModelState);
             }
@@ -153,7 +158,7 @@ namespace ITAssetManagement.Controllers
 
         //--------------------------------------------DELETE: api/users/5--------------------------------------------
         [ResponseType(typeof(user))]
-        public IHttpActionResult Deleteuser(int id)
+        public IHttpActionResult Deleteuser(int id, string token)
         {
             user user = db.users.Find(id);
             if (user == null)

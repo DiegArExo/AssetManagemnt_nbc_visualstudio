@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ITAssetManagement.Models;
@@ -17,35 +15,46 @@ namespace ITAssetManagement.Controllers
         */
         [ResponseType(typeof(object))]
         [Route("api/sdwan")]
-        public IHttpActionResult Get_sdwan()
+        public IHttpActionResult Get_sdwan(string token)
         {
             try
             {
-                var sdwanRecords = from s in db.sdwans
-                                   join f in db.firewalls on s.firewall_id equals f.id into firewallGroup
-                                   from f in firewallGroup.DefaultIfEmpty()
+                var sdwanRecords = (from sdwan in db.sdwans
+                                    join firewall in db.firewalls on sdwan.firewall_id equals firewall.id into fwGroup
+                                    from fw in fwGroup.DefaultIfEmpty()
 
-                                   join l in db.sdwan_laptops on s.sdwanlaptop_id equals l.id into laptopGroup
-                                   from l in laptopGroup.DefaultIfEmpty()
+                                    join laptop in db.sdwan_laptops on sdwan.sdwanlaptop_id equals laptop.id into ltGroup
+                                    from lt in ltGroup.DefaultIfEmpty()
 
-                                   join r in db.router_mtc on s.router_id equals r.id into routerGroup
-                                   from r in routerGroup.DefaultIfEmpty()
+                                    join router in db.router_mtc on sdwan.router_id equals router.id into rtGroup
+                                    from rt in rtGroup.DefaultIfEmpty()
 
-                                   join ass_assign_sdwan in db.assigned_sdwans
-                                     on s.id equals ass_assign_sdwan.sdwan_id into assignGroup
-                                   from ass_assign_sdwan in assignGroup.DefaultIfEmpty()
+                                    join assignedSdwan in db.assigned_sdwans on sdwan.id equals assignedSdwan.sdwan_id into assGroup
+                                    from assSdwan in assGroup.DefaultIfEmpty()
 
-                                   where s.firewall_id == 0 || s.router_id == 0 || s.sdwanlaptop_id == 0
-                                            || (s.firewall_id != 0 && s.router_id != 0 && s.sdwanlaptop_id != 0)
+                                    join user in db.users on assSdwan.user_assigned_id equals user.id into userGroup
+                                    from usr in userGroup.DefaultIfEmpty()
 
-                                   select new
-                                   {
-                                       Sdwan = s,
-                                       Firewall = f,
-                                       Laptop = l,
-                                       Router = r,
-                                        Assigned = ass_assign_sdwan != null ? "Assigned" : "Not Assigned"
-                                   };
+                                        // Check if assignedSdwan is not null to determine assignment status
+                                    let isAssigned = assSdwan != null ? "Assigned" : "Not Assigned"
+                                    let assignedData = assSdwan != null ? assSdwan.id : (int?)null
+
+                                    where db.firewalls.Any(f => f.id == sdwan.firewall_id) ||
+                                          db.sdwan_laptops.Any(l => l.id == sdwan.sdwanlaptop_id) ||
+                                          db.router_mtc.Any(r => r.id == sdwan.router_id) ||
+                                          db.assigned_sdwans.Any(a => a.sdwan_id == sdwan.id)
+                                    select new
+                                    {
+                                        SDWAN = sdwan,
+                                        Firewall = fw,
+                                        Laptop = lt,
+                                        Router = rt,
+                                        User = usr, // Include user information
+                                        AssignedSdwan = assSdwan,
+                                          AssignedStatus = isAssigned,
+                                        AssignedData = assignedData
+
+                                    }).ToList();
 
                 if (!sdwanRecords.Any())
                 {
@@ -60,27 +69,42 @@ namespace ITAssetManagement.Controllers
             }
         }
 
+
         // GET: api/sdwan/5
         [ResponseType(typeof(object))]
         [Route("api/sdwan/{id}")]
-        public IHttpActionResult Get_sdwan(int id)
+        public IHttpActionResult Get_sdwan(int id, string token)
         {
             try
             {
-                var sdwanRecord = from s in db.sdwans
-                                  join f in db.firewalls on s.firewall_id equals f.id into firewallGroup
-                                  from f in firewallGroup.DefaultIfEmpty()
-                                  join l in db.sdwan_laptops on s.sdwanlaptop_id equals l.id into laptopGroup
-                                  from l in laptopGroup.DefaultIfEmpty()
-                                  join r in db.router_mtc on s.router_id equals r.id into routerGroup
-                                  from r in routerGroup.DefaultIfEmpty()
-                                  where s.id == id
+                var sdwanRecord = from sdwan in db.sdwans
+                                  join firewall in db.firewalls on sdwan.firewall_id equals firewall.id into firewallGroup
+                                  from fw in firewallGroup.DefaultIfEmpty()
+
+                                  join laptop in db.sdwan_laptops on sdwan.sdwanlaptop_id equals laptop.id into laptopGroup
+                                  from lt in laptopGroup.DefaultIfEmpty()
+
+                                  join router in db.router_mtc on sdwan.router_id equals router.id into routerGroup
+                                  from rt in routerGroup.DefaultIfEmpty()
+
+                                  join assignedSdwan in db.assigned_sdwans
+                                      on sdwan.id equals assignedSdwan.sdwan_id into assignedGroup
+                                  from assSdwan in assignedGroup.DefaultIfEmpty()
+
+                                  join user in db.users
+                                      on assSdwan.user_assigned_id equals user.id into userGroup
+                                  from usr in userGroup.DefaultIfEmpty()
+
+                                  where sdwan.id == id
                                   select new
                                   {
-                                      Sdwan = s,
-                                      Firewall = f,
-                                      Laptop = l,
-                                      Router = r
+                                      SDWAN = sdwan,
+                                      Firewall = fw,
+                                      Laptop = lt,
+                                      Router = rt,
+                                      User = usr,
+                                      AssignedSdwan = assSdwan
+
                                   };
 
                 if (!sdwanRecord.Any())

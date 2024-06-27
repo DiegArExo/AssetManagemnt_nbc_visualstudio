@@ -34,11 +34,11 @@ namespace ITAssetManagement.Models
         [MaxLength]
         public string attachment { get; set; }
 
-        public int? status_id { get; set; }
+        public int status_id { get; set; }
 
-        public int? user_assigned_id { get; set; }
+        public int user_assigned_id { get; set; }
 
-        public int? user_created { get; set; }
+        public int user_created { get; set; }
 
         public int? user_updated { get; set; }
 
@@ -46,6 +46,6 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-       
+         
     }
 }

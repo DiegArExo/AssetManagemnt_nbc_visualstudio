@@ -27,16 +27,18 @@ namespace ITAssetManagement.Models
 
         public int status_id { get; set; }
 
-        public byte[] attachment { get; set; }
+        [MaxLength]
+        public string invoice { get; set; }
+
+        [MaxLength]
+        public string attachment { get; set; }
 
         public int user_created { get; set; }
 
-        public int user_updated { get; set; }
+        public int? user_updated { get; set; }
 
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-        
     }
 }
