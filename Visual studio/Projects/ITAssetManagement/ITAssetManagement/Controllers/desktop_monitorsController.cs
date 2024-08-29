@@ -39,10 +39,36 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while fetching desktop monitors.", Details = ex.Message });
             }
         }
+        //------------------------------------------------GET: api/desktop_monitors(GET ALL AVAILABLE) START---------------------------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors_available")]
+        public IHttpActionResult Getdesktop_monitors_available(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
+                }
+
+
+                return Ok(db.desktop_monitors.Where(r=>r.status_id==1));
+            }
+            catch (Exception ex)
+            {
+
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while fetching desktop monitors.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------GET: api/desktop_monitors(GET ALL AVAILABLE) END---------------------------------------------
 
 
         //-------------------------------------- GET: api/desktop_monitors/5(GET A SPECIFIC)---------------------------------------------
         [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/{id}")]
         public IHttpActionResult Getdesktop_monitors(int id, string token)
         {
             try
@@ -68,9 +94,12 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
             }
         }
+        //-------------------------------------- GET: api/desktop_monitors/5(GET A SPECIFIC) END---------------------------------------------
 
         //----PUT: api/desktop_monitors/5(UPDATE)---------------------------------------------
         [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/desktop_monitors/{id}")]
         public IHttpActionResult Putdesktop_monitors(int id, desktop_monitors desktop_monitors, string token)
         {
             try
@@ -98,9 +127,17 @@ namespace ITAssetManagement.Controllers
             existingDesktopsMonitors.model = desktop_monitors.model;
             existingDesktopsMonitors.monitor_serial_number = desktop_monitors.monitor_serial_number;
             existingDesktopsMonitors.monitor_tag_number = desktop_monitors.monitor_tag_number;
+          
+                existingDesktopsMonitors.Year = desktop_monitors.Year;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingDesktopsMonitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
 
 
-            db.Entry(existingDesktopsMonitors).State = EntityState.Modified;
+                db.Entry(existingDesktopsMonitors).State = EntityState.Modified;
 
             try
             {
@@ -180,6 +217,12 @@ namespace ITAssetManagement.Controllers
             desktop_monitors.date_updated = DateTime.Now;
             // Update device_status_id for the laptop
             desktop_monitors.status_id = 5;
+            //Get authernticated user id and save it
+            int? authenticatedUserId = GetUserIdFromToken(token);
+            if (authenticatedUserId.HasValue)
+            {
+                desktop_monitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+            }
 
             db.Entry(existingMonitor).CurrentValues.SetValues(desktop_monitors);
 
@@ -233,6 +276,7 @@ namespace ITAssetManagement.Controllers
 
                                  join d_device_status in db.device_status
                                  on l_monitor.status_id equals d_device_status.id
+                                 orderby l_monitor.date_created descending 
 
                                  select new
                                  {
@@ -241,8 +285,13 @@ namespace ITAssetManagement.Controllers
                                      l_monitor.model,
                                      l_monitor.monitor_serial_number,
                                      l_monitor.monitor_tag_number,
-
+                                    
+                                     l_monitor.Year,
                                      
+
+
+
+
                                      monitor_StatusName = d_device_status.name  
                                  };
                 return Ok(getmonitor);
@@ -258,9 +307,10 @@ namespace ITAssetManagement.Controllers
         }
         //------------------------------------------------------ GET MONITOR INFORMATION WITH STATUS NAME END ---------------------------------------------------------------------
 
-        //---------------------------------------------------------- PUT: api/desktop_monitors/5(WRITTING OFF)-----------------------------
+        //---------------------------------------------------------- PUT: api/desktop_monitors/5(WRITTING OFF A MONITOR)-----------------------------
         [ResponseType(typeof(void))]
         [Route("api/desktop_monitor/write_off/update/{id}")]
+        [HttpPut]
         public IHttpActionResult Putdesktop_monitors_write_off(int id, desktop_monitors desktop_monitors, string token)
         {
             try
@@ -285,10 +335,16 @@ namespace ITAssetManagement.Controllers
             //Defining Tableas that needs to be updated 
             existingDesktopsMonitors.comments = desktop_monitors.comments;
             existingDesktopsMonitors.attachment = desktop_monitors.attachment;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingDesktopsMonitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
 
 
 
-            db.Entry(existingDesktopsMonitors).State = EntityState.Modified;
+                db.Entry(existingDesktopsMonitors).State = EntityState.Modified;
 
             try
             {
@@ -347,6 +403,13 @@ namespace ITAssetManagement.Controllers
                     var desktop_monitors = model.Desktop_monitors;
 
                     desktop_monitors.date_created = DateTime.Now;
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        desktop_monitors.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        desktop_monitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
                     db.desktop_monitors.Add(desktop_monitors);
                     db.SaveChanges();
 
@@ -385,7 +448,182 @@ namespace ITAssetManagement.Controllers
 
         //------------------------------------------------------------------------------------------------POST: api/desktop_monitors End-------------------------------------------------------
 
+        //------------------------------------------------------ UPDATE MONITOR TO BE AVAILABLE START -----------------------------------------------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/desktop_monitors/update_monitor_status_available/{id}")]
+        public IHttpActionResult PutDesktopMonitorStatus(int id, string token)
+        {
+            try
+            {
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var existingDesktopMonitor = db.desktop_monitors.Find(id);
+                if (existingDesktopMonitor == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = $"Monitor with ID {id} not found." });
+                }
 
+                existingDesktopMonitor.status_id = 1;
+                // Get authenticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingDesktopMonitor.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingDesktopMonitor).State = EntityState.Modified;
+
+                try
+                {
+                    db.SaveChanges();
+                    return Content(HttpStatusCode.OK, new { Message = "Monitor status successfully updated to 1.", DesktopMonitor = existingDesktopMonitor });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (existingDesktopMonitor == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = "Monitor with the provided ID was not found." });
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the monitor status.", Error = innerException?.Message ?? ex.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------------ UPDATE MONITOR TO BE AVAILABLE END -------------------------------------------------------------------------------------------
+        //-------------------------------------------------------GET ALL MONITORS (TOTAL) END---------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/Get_all_monitor")]
+        public IHttpActionResult CountDesktopMonitors(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count all records in the desktop_monitors table
+                var desktopMonitorsCount = db.desktop_monitors.Count();
+
+                return Ok(new { total_monitors = desktopMonitorsCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //-------------------------------------------------------GET ALL MONITORS END---------------------------------------------------------------------------
+
+        //-------------------------------------------------------GET ALL AVAILABLE MONITORS START---------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/not_in_joined_desktops_by_monitor_id")]
+        public IHttpActionResult CountMonitorsNotInJoinedDesktopsByMonitorId(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count monitors that are not in joined_desktops_monitors by Monitor_id
+                var monitorsNotInJoinedDesktopsByMonitorIdCount = db.desktop_monitors
+                    .Count(dm => !db.joined_desktops_monitors.Any(jdm => jdm.desktop_monitor_id == dm.id));
+
+                return Ok(new { total_available_monitor = monitorsNotInJoinedDesktopsByMonitorIdCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //-------------------------------------------------------GET ALL AVAILABLE MONITORS END----------------------------------------------------------------------------
+
+        //-------------------------------------------------------GET ALL ASSIGNED MONITORS START---------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
+        [Route("api/desktop_monitors/in_joined_desktops_by_monitor_id")]
+        public IHttpActionResult CountMonitorsInJoinedDesktopsByMonitorId(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count monitors that are in joined_desktops_monitors by Monitor_id
+                var monitorsInJoinedDesktopsByMonitorIdCount = db.desktop_monitors
+                    .Count(dm => db.joined_desktops_monitors.Any(jdm => jdm.desktop_monitor_id == dm.id));
+
+                return Ok(new { Total_assigned_monitors = monitorsInJoinedDesktopsByMonitorIdCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //-------------------------------------------------------GET ALL ASSIGNED MONITORS START---------------------------------------------------------------------------
+
+
+        //-------------------------------------------------GET MONITOR INVOICE START----------------------------------------------
+       
+        [Route("api/desktop_monitors/get_incoice")]
+        [HttpGet]
+        public IHttpActionResult GetMonitorInvoiceAttachment(int monitorId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var monitorInoive = db.monitor_invoice
+                                   .Where(invoidId => invoidId.monitor_id == monitorId)
+                                   .FirstOrDefault();
+
+                if (monitorInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Invoice not found." });
+                }
+
+                return Ok(monitorInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+          
+        }
+
+
+       
+
+        //-------------------------------------------------GET MONITOR INVOICE END----------------------------------------------
+
+        //---------------------------------------------------DOWNLOAND THE ATTACHMENT(MONITOR WRITTEN OFF DOCUMENT) END-----------------------------
         // DELETE: api/desktop_monitors/5
         [ResponseType(typeof(desktop_monitors))]
         public IHttpActionResult Deletedesktop_monitors(int id, string token)

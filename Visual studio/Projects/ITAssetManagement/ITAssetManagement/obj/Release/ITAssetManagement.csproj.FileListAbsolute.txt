@@ -1,0 +1,215 @@
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ApplicationInsights.config
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\csc.exe
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CSharp.Core.targets
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.VisualBasic.Core.targets
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\System.Collections.Immutable.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\System.Reflection.Metadata.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\vbc.exe
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\VBCSCompiler.exe
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\VBCSCompiler.exe.config
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.dll.config
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.pdb
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Antlr3.Runtime.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.SqlServer.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Agent.Intercept.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.DependencyCollector.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.PerfCounterCollector.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.ServerTelemetryChannel.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Web.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.WindowsServer.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.ApplicationInsights.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.Edm.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.OData.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.Cors.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Web.Infrastructure.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Newtonsoft.Json.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Owin.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Swashbuckle.Core.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Net.Http.Formatting.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Spatial.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Cors.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Helpers.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.Cors.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.OData.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.WebHost.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Mvc.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Optimization.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Razor.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Deployment.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Razor.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\WebActivatorEx.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\WebGrease.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.SqlServer.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.DependencyCollector.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.ServerTelemetryChannel.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Web.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.WindowsServer.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.ApplicationInsights.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.Edm.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.OData.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.Cors.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Newtonsoft.Json.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Net.Http.Formatting.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Spatial.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.Cors.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.OData.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Helpers.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.WebHost.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Mvc.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Optimization.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Razor.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Deployment.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Razor.xml
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Antlr3.Runtime.pdb
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\Microsoft.Data.Edm.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\Microsoft.Data.OData.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\System.Spatial.resources.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Release\ITAssetManagement.dll
+C:\Shared Folder\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Release\ITAssetManagement.pdb
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ApplicationInsights.config
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\csc.exe
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.CSharp.Core.targets
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\Microsoft.VisualBasic.Core.targets
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\System.Collections.Immutable.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\System.Reflection.Metadata.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\vbc.exe
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\VBCSCompiler.exe
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\roslyn\VBCSCompiler.exe.config
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.dll.config
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ITAssetManagement.pdb
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Antlr3.Runtime.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.SqlServer.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Agent.Intercept.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.DependencyCollector.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.PerfCounterCollector.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.ServerTelemetryChannel.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Web.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.WindowsServer.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.ApplicationInsights.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.Edm.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.OData.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.Cors.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Web.Infrastructure.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Newtonsoft.Json.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Owin.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Swashbuckle.Core.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Net.Http.Formatting.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Spatial.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Cors.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Helpers.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.Cors.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.OData.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.WebHost.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Mvc.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Optimization.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Razor.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Deployment.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Razor.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\WebActivatorEx.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\WebGrease.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\EntityFramework.SqlServer.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.DependencyCollector.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.ServerTelemetryChannel.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.Web.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.AI.WindowsServer.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.ApplicationInsights.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.Edm.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Data.OData.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Microsoft.Owin.Cors.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Newtonsoft.Json.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Net.Http.Formatting.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Spatial.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.Cors.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.OData.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Helpers.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Http.WebHost.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Mvc.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Optimization.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.Razor.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Deployment.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\System.Web.WebPages.Razor.xml
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\Antlr3.Runtime.pdb
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\Microsoft.Data.Edm.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\Microsoft.Data.OData.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\de\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\es\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\fr\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\it\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ja\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ko\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\ru\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\System.Spatial.resources.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Release\ITAssetManagement.csprojResolveAssemblyReference.cache
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Release\ITAssetManagement.dll
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Release\ITAssetManagement.pdb

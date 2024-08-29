@@ -8,8 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class desktop_monitors
     {
-        
-
         public int id { get; set; }
 
         [Required]
@@ -28,15 +26,17 @@ namespace ITAssetManagement.Models
         [StringLength(50)]
         public string monitor_tag_number { get; set; }
 
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
+
         [Column(TypeName = "text")]
         public string comments { get; set; }
-
         [MaxLength]
         public string attachment { get; set; }
 
         public int status_id { get; set; }
 
-        public int user_assigned_id { get; set; }
+        public int? user_assigned_id { get; set; }
 
         public int user_created { get; set; }
 
@@ -45,7 +45,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-         
     }
 }

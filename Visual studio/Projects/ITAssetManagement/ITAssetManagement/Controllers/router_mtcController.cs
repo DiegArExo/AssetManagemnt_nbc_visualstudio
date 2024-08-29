@@ -22,26 +22,84 @@ namespace ITAssetManagement.Controllers
         [Route("api/router_mtc")]
         public IHttpActionResult Getrouter_mtc(string token)
         {
+            //try
+            //{
+            //    // Validate the token
+            //    if (validate_token(token))
+            //    {
+            //        return Unauthorized(); // Return 401 Unauthorized response
+            //    }
+
+            //    // Return the IQueryable of router_mtc
+            //    var routerMtcList = db.router_mtc.ToList(); // Execute query to fetch data
+            //    return Ok(routerMtcList); // Return 200 OK with data
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Log the exception or handle it as needed
+            //    return InternalServerError(ex); // Return 500 Internal Server Error with exception details
+            //}
+
             try
             {
                 // Validate the token
                 if (validate_token(token))
                 {
-                    return Unauthorized(); // Return 401 Unauthorized response
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
                 }
 
-                // Return the IQueryable of router_mtc
-                var routerMtcList = db.router_mtc.ToList(); // Execute query to fetch data
-                return Ok(routerMtcList); // Return 200 OK with data
+                // Join sdwan_laptops with device_status to get the status_name
+                var result = from sdwanRouter in db.router_mtc
+                             join status in db.device_status on sdwanRouter.status_id equals status.id
+                             orderby sdwanRouter.date_created descending
+                             select new
+                             {
+                                 sdwan_router = sdwanRouter,
+
+                                 StatusName = status.name
+                             };
+
+                return Ok(result.ToList());
             }
             catch (Exception ex)
             {
                 // Log the exception or handle it as needed
-                return InternalServerError(ex); // Return 500 Internal Server Error with exception details
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while fetching sdwan Router.", Details = ex.Message });
             }
         }
+        // ------------------------GET: api/router_mtc --- (GET AVAILABLE ) START -----------------------------------------------
+        [ResponseType(typeof(router_mtc))]
+        [HttpGet]
+        [Route("api/router_mtc_available")]
+        public IHttpActionResult Getrouter_mtc_available(string token)
+        {
+            try
+            {
+               // Validate the token
+                if (validate_token(token))
+               {
+                    return Unauthorized(); // Return 401 Unauthorized response
+                }
+
+                
+               return Ok(db.router_mtc.Where(ro=>ro.status_id==1)); // Return 200 OK with data
+             }
+            catch (Exception ex)
+             {
+                 // Log the exception or handle it as needed
+                return InternalServerError(ex); 
+            }
+
+           
+        }
+        // ------------------------GET: api/router_mtc --- (GET AVAILABLE ) END -----------------------------------------------
+
+
+
         //-------------------------------- GET: api/router_mtc/5 (GET A SPECIFIC)------------------------------------------------
         [ResponseType(typeof(router_mtc))]
+        [HttpGet]
+        [Route("api/router_mtc/{id}")]
         public IHttpActionResult Getrouter_mtc(int id, string token)
         {
             try
@@ -69,8 +127,10 @@ namespace ITAssetManagement.Controllers
 
 
         //----------------------------------------PUT: api/router_mtc/5(UPDATE) ----------------------------------------
-        [HttpPut]
+       
         [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/router_mtc/{id}")]
         public IHttpActionResult Putrouter_mtc(int id, router_mtc router_mtc, string token)
         {
             try
@@ -98,6 +158,14 @@ namespace ITAssetManagement.Controllers
                 existingsdwanrouter.serial_number = router_mtc.serial_number;
                 existingsdwanrouter.tag_number = router_mtc.tag_number;
                 existingsdwanrouter.model = router_mtc.model;
+                existingsdwanrouter.Year = router_mtc.Year;
+                existingsdwanrouter.Processors = router_mtc.Processors;
+
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingsdwanrouter.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
 
                 db.Entry(existingsdwanrouter).State = EntityState.Modified;
 
@@ -171,15 +239,22 @@ namespace ITAssetManagement.Controllers
             // Always update the date_updated field
             router_mtc.date_updated = DateTime.Now;
             // Update device_status_id for the laptop
-            router_mtc.status_id = 1;
+           
 
-            // Update specific fields
-            existingRouter.comments = router_mtc.comments;
+                // Update specific fields
+                existingRouter.status_id = 5;
+                existingRouter.comments = router_mtc.comments;
             existingRouter.attachment = router_mtc.attachment;
 
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingRouter.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
 
 
-            db.Entry(existingRouter).State = EntityState.Modified;
+
+                db.Entry(existingRouter).State = EntityState.Modified;
 
             try
             {
@@ -232,12 +307,20 @@ namespace ITAssetManagement.Controllers
                 {
                     return BadRequest(ModelState);
                 }
- 
+
+                router_mtc.date_created = DateTime.Now;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    router_mtc.user_created = authenticatedUserId.Value;
+                    router_mtc.user_updated = authenticatedUserId.Value;
+                }
                 db.router_mtc.Add(router_mtc);
                 db.SaveChanges();
 
-       
-                return CreatedAtRoute("DefaultApi", new { id = router_mtc.id }, new { message = "Router MTC created successfully.", router_mtc });
+                return Content(HttpStatusCode.Created, new { message = "Router MTC created successfully.", router_mtc = router_mtc });
+               
             }
             catch (Exception ex)
             {
@@ -245,9 +328,68 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { message = "An unexpected error occurred.", details = ex.Message });
             }
         }
+        //------------------------------------------------------ UPDATE SDWAN ROUTER TO BE AVAILABLE START -----------------------------------------------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/router_mtc/update_router_status_available/{id}")]
+        public IHttpActionResult PutSdwanRouterStatus(int id, string token)
+        {
+            try
+            {
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var existingSdwanRouter = db.router_mtc.Find(id);
+                if (existingSdwanRouter == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = $"Sdwan laptops with ID {id} not found." });
+                }
+
+                existingSdwanRouter.status_id = 1;
+                // Get authenticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingSdwanRouter.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingSdwanRouter).State = EntityState.Modified;
+
+                try
+                {
+                    db.SaveChanges();
+                    return Content(HttpStatusCode.OK, new { Message = "Router status successfully updated to 1.", SdwanRouterStatus = existingSdwanRouter });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (existingSdwanRouter == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = "Router with the provided ID was not found." });
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the monitor status.", Error = innerException?.Message ?? ex.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------------ UPDATE SDWAN ROUTER TO BE AVAILABLE END ------------------------------------------------------------------------------
+       
 
         //-------------------------------------- DELETE: api/router_mtc/5--------------------------------------
         [ResponseType(typeof(router_mtc))]
+        [HttpDelete]
+        [Route("api/router_mtc/{id}")]
         public IHttpActionResult Deleterouter_mtc(int id, string token)
         {
            

@@ -151,15 +151,52 @@ namespace ITAssetManagement.Controllers
                     return Content(HttpStatusCode.Conflict, new { message = "SDWAN has already been assigned." });
                 }
 
+               
+
+
                 // Set date_created to current date and time
                 assigned_sdwans.date_created = DateTime.Now;
-                assigned_sdwans.user_created = 1;
-                assigned_sdwans.user_updated = 1;
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    assigned_sdwans.user_updated = authenticatedUserId.Value;
+                    assigned_sdwans.user_created = authenticatedUserId.Value;
+                }
                 db.assigned_sdwans.Add(assigned_sdwans);
                 db.SaveChanges();
 
+
+                // Update sdwan_laptops, router_mtc and firewalls
+                var sdwanData = db.sdwans.FirstOrDefault(s => s.id == assigned_sdwans.sdwan_id);
+                if (sdwanData != null)
+                {
+                    // Update sdwan_laptops status_id to 2 making the status assigned
+                    var sdwanLaptops = db.sdwan_laptops.Where(sl => sl.id == sdwanData.sdwanlaptop_id);
+                    foreach (var laptop in sdwanLaptops)
+                    {
+                        laptop.status_id = 2;
+                    }
+
+                    // Update router_mtc status_id to 2 making the status assigned
+                    var routers = db.router_mtc.Where(r => r.id == sdwanData.router_id);
+                    foreach (var router in routers)
+                    {
+                        router.status_id = 2;
+                    }
+
+                    // Update firewalls status_id to 2 making the status assigned
+                    var firewalls = db.firewalls.Where(f => f.id == sdwanData.firewall_id);
+                    foreach (var firewall in firewalls)
+                    {
+                        firewall.status_id = 2;
+                    }
+
+                    // Save changes to the database
+                    db.SaveChanges();
+                }
+
                 // return CreatedAtRoute("DefaultApi", new { id = assigned_sdwans.id }, assigned_sdwans);
-                return Content(HttpStatusCode.Created, new { message = "SDWAN Assigned successfully.", assigned_sdwans = assigned_sdwans });
+                return Content(HttpStatusCode.Created, new { message = "SDWAN Assigned successfully.", assigned_sdwans = assigned_sdwans});
             }
             catch (Exception ex)
             {
@@ -175,32 +212,78 @@ namespace ITAssetManagement.Controllers
         [Route("api/un_assigned_sdwans/{sdwan_id}")]
         public IHttpActionResult Delete_Unassing_sdwans(int sdwan_id, string token)
         {
-            try
+            using (var transaction = db.Database.BeginTransaction())
             {
-                // Validate the token
-                if (validate_token(token))
+                try
                 {
-                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                  
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+                
+                    var assigned_sdwans = db.assigned_sdwans.FirstOrDefault(a => a.sdwan_id == sdwan_id);
+                    if (assigned_sdwans == null)
+                    {
+          
+                        return Content(HttpStatusCode.NotFound, new { message = "SDWAN is not assigned." });
+                    }
+
+                    // Update sdwan_laptops, router_mtc and firewalls
+                    var sdwanData = db.sdwans.FirstOrDefault(s => s.id == assigned_sdwans.sdwan_id);
+                    if (sdwanData != null)
+                    {
+                        // Update sdwan_laptops status_id to 2 making the status Available
+                        var sdwanLaptops = db.sdwan_laptops.Where(sl => sl.id == sdwanData.sdwanlaptop_id);
+                        foreach (var laptop in sdwanLaptops)
+                        {
+                            laptop.status_id = 1;
+                        }
+
+                        // Update router_mtc status_id to 2 making the status Available
+                        var routers = db.router_mtc.Where(r => r.id == sdwanData.router_id);
+                        foreach (var router in routers)
+                        {
+                            router.status_id = 1;
+                        }
+
+                        // Update firewalls status_id to 2 making the status Available
+                        var firewalls = db.firewalls.Where(f => f.id == sdwanData.firewall_id);
+                        foreach (var firewall in firewalls)
+                        {
+                            firewall.status_id = 1;
+                        }
+
+                        // Save changes to the database
+                        db.SaveChanges();
+                    }
+
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        assigned_sdwans.user_updated = authenticatedUserId.Value;
+                        db.Entry(assigned_sdwans).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+
+
+                    db.assigned_sdwans.Remove(assigned_sdwans);
+                    db.SaveChanges();
+
+
+                    // Commit the transaction
+                    transaction.Commit();
+
+                    return Ok(new { message = "SDWAN has successfully been unassigned.", assigned_sdwans = assigned_sdwans });
                 }
-                // Find the assigned_sdwans entry based on the sdwan_id
-                var assigned_sdwans = db.assigned_sdwans.FirstOrDefault(a => a.sdwan_id == sdwan_id);
-                if (assigned_sdwans == null)
+                catch (Exception ex)
                 {
-                    //return NotFound();
-                    return Content(HttpStatusCode.NotFound, new { message = "SDWAN is not assigned." });
+                    // Rollback the transaction incase somthing goes wrong 
+                    transaction.Rollback();
+
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while deleting the assigned SD-WAN.", error = ex.Message });
                 }
-
-                // Remove the entry from the database
-                db.assigned_sdwans.Remove(assigned_sdwans);
-                db.SaveChanges();
-
-                // Return OK response with the deleted assigned_sdwans data
-                return Ok(new { message = "SDWAN has successfully been Unassigned.", assigned_sdwans = assigned_sdwans });
-            }
-            catch (Exception ex)
-            {
-                // Return InternalServerError response with the error message
-                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while deleting the assigned SD-WAN.", error = ex.Message });
             }
         }
         //-------------------------------------------- DELETE: un- Assign SDWAN ------------------------------------------------------

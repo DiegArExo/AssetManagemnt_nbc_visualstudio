@@ -41,10 +41,36 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving desktop_cpus.", Details = ex.Message });
             }
         }
+        // -------------------------------------GET: api/desktop_cpus(AVAILABLE)-------------------------------------------------------------------
+        // GET: api/desktop_cpus
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_cpus_available")]
+        public IHttpActionResult Getdesktop_cpus_available(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
 
+
+                var desktop_cpus = db.desktop_cpus.Where(c=> c.status_id == 1);
+                return Ok(desktop_cpus);
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected exceptions
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving desktop_cpus.", Details = ex.Message });
+            }
+        }
+        // -------------------------------------GET: api/desktop_cpus(AVAILABLE)-------------------------------------------------------------------
 
         // ---------------------------------------------------------------GET: api/desktop_cpus/5 (GET A SPECIFIC)---------------------------------------------------------------
         [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
         public IHttpActionResult Getdesktop_cpus(int id, string token)
         {
             try
@@ -67,14 +93,15 @@ namespace ITAssetManagement.Controllers
             }
             catch (Exception ex)
             {
-            
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving desktop_cpus.", Details = ex.Message });
             }
         }
 
 
         //--------------------------------------------------------------- PUT: api/desktop_cpus/5---------------------------------------------------------------
+        
         [ResponseType(typeof(void))]
+        [HttpPut]
         public IHttpActionResult Putdesktop_cpus(int id, desktop_cpus desktop_cpus, string token)
         {
             try
@@ -102,8 +129,17 @@ namespace ITAssetManagement.Controllers
             existingDesktopsCPU.model = desktop_cpus.model;
             existingDesktopsCPU.cpu_serial_number = desktop_cpus.cpu_serial_number;
             existingDesktopsCPU.cpu_tag_number = desktop_cpus.cpu_tag_number;
+                existingDesktopsCPU.Processors = desktop_cpus.Processors;
+                existingDesktopsCPU.Year = desktop_cpus.Year;
 
-            db.Entry(existingDesktopsCPU).State = EntityState.Modified;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingDesktopsCPU.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingDesktopsCPU).State = EntityState.Modified;
 
             try
             {
@@ -182,7 +218,14 @@ namespace ITAssetManagement.Controllers
             // Update device_status_id for the laptop
             desktop_cpus.status_id = 5;
 
-            db.Entry(existingCPU).CurrentValues.SetValues(desktop_cpus);
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    desktop_cpus.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingCPU).CurrentValues.SetValues(desktop_cpus);
 
             try
             {
@@ -224,7 +267,7 @@ namespace ITAssetManagement.Controllers
         //------------------------------------------------ GET CPU INFORMATION WITH STATUS NAME START ----------------------------------------------------------------------------------------------
         [ResponseType(typeof(desktop_cpus))]
         [HttpGet]
-        [Route("api/desktop_monitors/get_cpus")]
+        [Route("api/desktop_cpus/get_cpus")]
         public IHttpActionResult Getcpus(string token)
         {
             try
@@ -239,14 +282,16 @@ namespace ITAssetManagement.Controllers
 
                           join d_device_status in db.device_status
                           on l_cpu.status_id equals d_device_status.id
-
-                          select new
+                              orderby l_cpu.date_created descending
+                              select new
                           {
                               l_cpu.id,
                               l_cpu.brand_name,
                               l_cpu.model,
                               l_cpu.cpu_serial_number,
                               l_cpu.cpu_tag_number,
+                              l_cpu.Processors,
+                              l_cpu.Year,
 
 
                               cpu_StatusName = d_device_status.name // Get the status name
@@ -286,6 +331,15 @@ namespace ITAssetManagement.Controllers
                     var desktop_cpus = model.Desktop_cpu;
                     desktop_cpus.date_created = DateTime.Now;
 
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        desktop_cpus.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        desktop_cpus.user_updated = authenticatedUserId.Value; // Set to authenticated user
+
+                    }
+
                     db.desktop_cpus.Add(desktop_cpus);
                     db.SaveChanges();
 
@@ -321,8 +375,194 @@ namespace ITAssetManagement.Controllers
             }
         }
 
-        //--------------------------------------------------------------------------------- POST: api/desktop_cpus start ---------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------- POST: api/desktop_cpus end ---------------------------------------------------------------------------------
 
+        //------------------------------------------------------ UPDATE CPU TO BE AVAILABLE START -----------------------------------------------------------------------------------------
+        
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/desktop_cpus/update_cpu_status_available/{id}")]
+        public IHttpActionResult PutDesktopCpuStatus(int id, string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Retrieve the existing entity from the database
+                var existingDesktopCpu = db.desktop_cpus.Find(id);
+                if (existingDesktopCpu == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = $"CPU with ID {id} not found." });
+                }
+
+                // Update the status to 1
+                existingDesktopCpu.status_id = 1;
+
+                // Get authenticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingDesktopCpu.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingDesktopCpu).State = EntityState.Modified;
+
+                try
+                {
+                    db.SaveChanges();
+                    return Content(HttpStatusCode.OK, new { Message = "CPU status successfully updated to 1.", DesktopCpu = existingDesktopCpu });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!DesktopCpuExists(id))
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = "CPU with the provided ID was not found." });
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the CPU status.", Error = innerException?.Message ?? ex.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+
+        private bool DesktopCpuExists(int id)
+        {
+            return db.desktop_cpus.Count(e => e.id == id) > 0;
+        }
+
+        //------------------------------------------------------ UPDATE CPU TO BE AVAILABLE END -------------------------------------------------------------------------------------------
+        //------------------------------------------------------ GET ALL CPU (TOTAL)-------------------------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_cpus/get_all_cpu")]
+        public IHttpActionResult CountDesktopCPUs(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count all records in the desktop_cpus table
+                var desktopCPUsCount = db.desktop_cpus.Count();
+
+                return Ok(new { total_cpu = desktopCPUsCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+
+        //------------------------------------------------------ GET ALL CPU (TOTAL)-------------------------------------------------------------------------------------------
+
+        //------------------------------------------------------ GET ALL AVAILABLE CPU (TOTAL) START-----------------------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_cpus/not_in_joined_desktops")]
+        public IHttpActionResult CountCPUsNotInJoinedDesktops(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count CPUs that are not in joined_desktops_monitors
+                var cpusNotInJoinedDesktopsCount = db.desktop_cpus
+                    .Count(cpu => !db.joined_desktops_monitors.Any(jdm => jdm.desktop_cpu_id == cpu.id));
+
+                return Ok(new { total_available_cpu = cpusNotInJoinedDesktopsCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+
+
+        //------------------------------------------------------GET ALL ASSIGNED CPU (TOTAL) END-------------------------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpGet]
+        [Route("api/desktop_cpus/in_joined_desktops")]
+        public IHttpActionResult CountCPUsInJoinedDesktops(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count CPUs that are in joined_desktops_monitors
+                var cpusInJoinedDesktopsCount = db.desktop_cpus
+                    .Count(cpu => db.joined_desktops_monitors.Any(jdm => jdm.desktop_cpu_id == cpu.id));
+
+                return Ok(new { total_assigned_cpu = cpusInJoinedDesktopsCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------------ GET ALL ASSIGNED CPU (TOTAL) END-------------------------------------------------------------------------------------------
+
+        //-------------------------------------------------GET CPU INVOICE START----------------------------------------------
+
+        [Route("api/desktop_cpus/get_incoice")]
+        [HttpGet]
+        public IHttpActionResult GetCpuInvoiceAttachment(int cpuId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var cpuInoive = db.cpu_invoice
+                                   .Where(invoidId => invoidId.cpu_id == cpuId)
+                                   .FirstOrDefault();
+
+                if (cpuInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Invoice not found." });
+                }
+
+                return Ok(cpuInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+
+
+        //-------------------------------------------------GET CPU INVOICE END----------------------------------------------
 
         // DELETE: api/desktop_cpus/5
         [ResponseType(typeof(desktop_cpus))]

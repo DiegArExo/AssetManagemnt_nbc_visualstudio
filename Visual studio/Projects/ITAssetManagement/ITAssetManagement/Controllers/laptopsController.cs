@@ -16,6 +16,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ITAssetManagement.Models;
+using ITAssetManagement.Filters;
 
 namespace ITAssetManagement.Controllers
 {
@@ -24,6 +25,8 @@ namespace ITAssetManagement.Controllers
         private ITAssetManagementDB db = new ITAssetManagementDB();
 
         // GET: api/laptops
+        // [ApiExplorerSettings(IgnoreApi = true)]
+        //[ApiKeyAuth]
         [ResponseType(typeof(laptop))]
         [HttpGet]
         [Route("api/laptops")]
@@ -77,6 +80,7 @@ namespace ITAssetManagement.Controllers
                                                       join d_device_status in db.device_status
                                                       on l_laptop.device_status_id equals d_device_status.id
                                                       where l_laptop.type == "0"
+                                                      orderby l_laptop.date_created descending
                                                       select new
                                                       {
                                                           Laptop = l_laptop, // Get all laptop details
@@ -92,6 +96,50 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
             }
         }
+        //------------------------------------------------------------------ --GET NON LOANABLE LAPTOPS BY FILTER START--------------------------------
+        [ResponseType(typeof(laptop))]
+        [HttpGet]
+        [Route("api/laptops/get_non_loanable_laptops_by_filter/{StatusID}")]
+        public IHttpActionResult Getnonloanablelaptop(int StatusID, string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                // Fetch non-loanable laptops from the database
+                var non_loanable_laptop = db.laptops.Where(getType => getType.type == "0").ToList();
+
+                // Check if the fetched list is null or empty
+                if (non_loanable_laptop == null || !non_loanable_laptop.Any())
+                {
+                    return NotFound(); // Return 404 if no non-loanable laptops are found
+                }
+
+                // Fetch non-loanable laptops along with their status from the database
+                var non_loanable_laptop_with_status = from l_laptop in db.laptops
+                                                      join d_device_status in db.device_status
+                                                      on l_laptop.device_status_id equals d_device_status.id
+                                                      where l_laptop.type == "0" && l_laptop.device_status_id == StatusID || StatusID == 0 && l_laptop.type == "0"
+                                                      orderby l_laptop.date_created descending
+                                                      select new
+                                                      {
+                                                          Laptop = l_laptop, // Get all laptop details
+                                                          noLoanable_StatusName = d_device_status.name // Get the status name
+                                                      };
+
+                // Return the result with the status included
+                return Ok(non_loanable_laptop_with_status);
+            }
+            catch (Exception ex)
+            {
+
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------------------------ --GET NON LOANABLE LAPTOPS BY FILTER END---------------------------------- 
 
         //------------------------------------------------------------------ --GET LOANABLE LAPTOPS-------------------------------- 
         [ResponseType(typeof(laptop))]
@@ -120,6 +168,7 @@ namespace ITAssetManagement.Controllers
                                               join d_device_status in db.device_status
                                               on loan_laptop.device_status_id equals d_device_status.id
                                               where loan_laptop.type == "1"
+                                              orderby loan_laptop.date_created descending
                                               select new
                                               {
                                                   LoanableLaptop = loan_laptop, // Get all laptop details
@@ -200,6 +249,9 @@ namespace ITAssetManagement.Controllers
             existingLaptops.model = laptop.model;
             existingLaptops.serial_number = laptop.serial_number;
             existingLaptops.tag_number = laptop.tag_number;
+            existingLaptops.user_updated = laptop.user_updated;
+            existingLaptops.Year = laptop.Year;
+            existingLaptops.Processors = laptop.Processors;
                 // existingLaptops.device_status_id = laptop.device_status_id;
                 if (laptop.device_status_id != null)
                 {
@@ -218,11 +270,14 @@ namespace ITAssetManagement.Controllers
                 existingLaptops.device_status_id = laptop.device_status_id;
             }
 
-            // existingLaptops.type = laptop.type;
-            // existingLaptops.device_status_id = laptop.device_status_id;
-
-            //Insert in the date updated
-            laptop.date_updated = DateTime.Now;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingLaptops.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+                //Insert in the date updated
+                laptop.date_updated = DateTime.Now;
 
             db.Entry(existingLaptops).State = EntityState.Modified;
 
@@ -281,6 +336,12 @@ namespace ITAssetManagement.Controllers
                     var laptop = model.Laptop;
 
                     laptop.date_created = DateTime.Now;
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        laptop.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        laptop.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
                     db.laptops.Add(laptop);
                     db.SaveChanges();
 
@@ -317,7 +378,7 @@ namespace ITAssetManagement.Controllers
             }
         }
 
-        //------------------------------------------------------ POST: (POST laptop) Start----------------------------
+        //------------------------------------------------------ POST: (POST laptop) End----------------------------
 
 
 
@@ -363,10 +424,16 @@ namespace ITAssetManagement.Controllers
             laptop.date_updated = DateTime.Now;
             // Update device_status_id for the laptop
             laptop.device_status_id = 5;
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                 
+                    laptop.user_updated = authenticatedUserId.Value; 
+                }
 
 
 
-            db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
+                db.Entry(existingLaptop).CurrentValues.SetValues(laptop);
 
             try
             {
@@ -402,6 +469,150 @@ namespace ITAssetManagement.Controllers
             }
         }
         //-----------------------------------------------WRITE-OFF A LAPTOP END------------------------------------------------------------------
+
+
+
+        //---------------------------------------COUNT THE TOTAL NON-LOANABLE LAPTOPS --------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpGet]
+        [Route("api/laptops/count_non_loanable_laptops")]
+        public IHttpActionResult CountNonLoanableLaptops(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count non-loanable laptops from the database
+                var nonLoanableCount = db.laptops.Count(l => l.type == "0");
+
+                return Ok(new { total_none_loanable_laptops = nonLoanableCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //---------------------------------------COUNT THE TOTAL LOANABLE LAPTOPS --------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpGet]
+        [Route("api/laptops/count_loanable_laptops")]
+        public IHttpActionResult CountLoanableLaptops(string token)
+        {
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+
+                // Count loanable laptops from the database
+                var loanableCount = db.laptops.Count(l => l.type == "1");
+
+                return Ok(new { total_loaneble_laptops = loanableCount });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //---------------
+        //------------------------------------------------------ UPDATE LAPTOP TO BE AVAILABLE START -----------------------------------------------------------------------------------------
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        [Route("api/laptops/update_laptops_status_available/{id}")]
+        public IHttpActionResult PutLaptopStatus(int id, string token)
+        {
+            try
+            {
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var existingLaptop = db.laptops.Find(id);
+                if (existingLaptop == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = $"Laptop with ID {id} not found." });
+                }
+
+                existingLaptop.device_status_id = 1;
+                // Get authenticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingLaptop.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                db.Entry(existingLaptop).State = EntityState.Modified;
+
+                try
+                {
+                    db.SaveChanges();
+                    return Content(HttpStatusCode.OK, new { Message = "Laptop status successfully updated to 1.", LaptopsStatus = existingLaptop });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (existingLaptop == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = "Laptop with the provided ID was not found." });
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the monitor status.", Error = innerException?.Message ?? ex.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+        //------------------------------------------------------ UPDATE LAPTOP TO BE AVAILABLE END -------------------------------------------------------------------------------------------
+
+        //-------------------------------------------------GET LAPTOP INVOICE START----------------------------------------------
+
+        [Route("api/laptops/get_incoice")]
+        [HttpGet]
+        public IHttpActionResult GetLaptopAttachment(int laptopId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var laptopInoive = db.laptop_invoice
+                                   .Where(invoidId => invoidId.laptop_id == laptopId)
+                                   .FirstOrDefault();
+
+                if (laptopInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Invoice not found." });
+                }
+
+                return Ok(laptopInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+        //-------------------------------------------------GET LAPTOP INVOICE END----------------------------------------------
 
         // DELETE: api/laptops/5
         [ResponseType(typeof(laptop))]

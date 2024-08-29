@@ -36,7 +36,7 @@ namespace ITAssetManagement.Controllers
                     return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
                 }
 
-                var users = db.users.ToList();
+                var users = db.users.OrderBy(uers_data=> uers_data.fullname).ToList();
 
                 return Ok(users);
             }
@@ -82,13 +82,61 @@ namespace ITAssetManagement.Controllers
         }
 
         //-----------------------------------------------PUT: api/users/5 (UPDATE SPECIFIC USER END)---------------------------------------------------------
+        //[ResponseType(typeof(user))]
+        //public IHttpActionResult Putuser(int id, user user, string token)
+        //{
+        //    if (validate_token(token))
+        //    {
+        //        return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
+        //    }
+
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return Content(HttpStatusCode.BadRequest, new { Message = "Invalid model state.", ModelState = ModelState });
+        //    }
+
+        //    if (id != user.id)
+        //    {
+        //        return Content(HttpStatusCode.BadRequest, new { Message = "The ID in the URL does not match the ID in the user object." });
+        //    }
+
+        //    db.Entry(user).State = EntityState.Modified;
+
+        //    try
+        //    {
+        //        db.SaveChanges();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!userExists(id))
+        //        {
+        //            return Content(HttpStatusCode.NotFound, new { Message = $"User with ID {id} not found." });
+        //        }
+        //        else
+        //        {
+        //            return Content(HttpStatusCode.InternalServerError, new { Message = "A concurrency error occurred while updating the user." });
+        //        }
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        return Content(HttpStatusCode.InternalServerError, new { Message = "A database update error occurred while updating the user.", Details = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the user.", Details = ex.Message });
+        //    }
+
+        //    return Ok(new { Message = "User updated successfully.", Data = user });
+        //}
         [ResponseType(typeof(user))]
+        [HttpPut]
+        [Route("api/update_users/{id}")]
         public IHttpActionResult Putuser(int id, user user, string token)
         {
             if (validate_token(token))
             {
                 return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
-            }
+            }   
 
             if (!ModelState.IsValid)
             {
@@ -100,35 +148,58 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.BadRequest, new { Message = "The ID in the URL does not match the ID in the user object." });
             }
 
-            db.Entry(user).State = EntityState.Modified;
+            try { 
+                var existingUser = db.users.Find(id);
+                if (existingUser == null)
+                {
+                return NotFound();
+                }
 
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!userExists(id))
+                // Update all properties
+                foreach (var property in typeof(user).GetProperties())
                 {
-                    return Content(HttpStatusCode.NotFound, new { Message = $"User with ID {id} not found." });
+                var newValue = property.GetValue(user);
+
+                    if (newValue != null)
+                    {   
+                    property.SetValue(existingUser, newValue);
+                    }   
                 }
-                else
+
+                db.Entry(existingUser).State = EntityState.Modified;
+
+                try { 
+                    db.SaveChanges();
+
+                    existingUser.date_updated = DateTime.Now;
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        existingUser.user_updated = authenticatedUserId.Value;
+                        db.Entry(existingUser).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+                }
+                catch (DbUpdateConcurrencyException)
                 {
-                    return Content(HttpStatusCode.InternalServerError, new { Message = "A concurrency error occurred while updating the user." });
+                    if (!userExists(id))
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = $"User with ID {id} not found." });
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.InternalServerError, new { Message = "A concurrency error occurred while updating the user." });
+                    }
                 }
-            }
-            catch (DbUpdateException ex)
-            {
-                return Content(HttpStatusCode.InternalServerError, new { Message = "A database update error occurred while updating the user.", Details = ex.Message });
             }
             catch (Exception ex)
             {
-                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the user.", Details = ex.Message });
+            return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating the user.", Details = ex.Message });
             }
 
-            return Ok(new { Message = "User updated successfully.", Data = user });
-        }
+            return Ok(new { Message = "User updated successfully.", user });
 
+        }
 
         // ------- ------------------------POST: api/users.(POST< CREATE A USER) ------------------------------------------------------------
         [ResponseType(typeof(user))]
@@ -220,12 +291,20 @@ namespace ITAssetManagement.Controllers
                     if (pc.ValidateCredentials(username, password) == true)
                     {
                         //Get the user information where the username is equal to the username they provided
-                        var user = db.users.Where(r => r.username == username).FirstOrDefault();
+                       //var user = db.users.Where(r => r.username == username).FirstOrDefault();
+
+                        var user = db.users.FirstOrDefault(r => r.username == username);
+
+
 
 
                         if (user != null)
                         {
-                            authentication authentication = new authentication();
+                           var roles = db.roles.Where(r => r.user_id == user.id && r.role_name == "Administrator").FirstOrDefault();
+                           // var roles = db.roles.FirstOrDefault(r => r.user_id == user.id && r.role_name == "Administrator");
+                            if (roles != null)
+                            {
+                                authentication authentication = new authentication();
                             authentication.token = GenerateAPIKey();
                             authentication.user_id = user.id;
                             authentication.user_created = user.id;
@@ -237,25 +316,48 @@ namespace ITAssetManagement.Controllers
 
                             auth_returned = authentication;
 
-                            return Ok(new { auth_returned });
-                            //return Ok(new
-                            //{
-                            //    token = authentication.token,
-                            //    expiry_time = authentication.expiry_time,
-                            //    user_id = authentication.user_id
-                            //});
+                           /// return Ok(new { auth_returned });
+                                return Ok(new { auth_returned });
+                                //return Ok(new
+                                //{
+                                //    token = authentication.token,
+                                //    expiry_time = authentication.expiry_time,
+                                //    user_id = authentication.user_id
+                                //});
+                            }
+                            else
+                            {
+                                // Return an unauthorized response if the user does not have the required role
+                               //return Unauthorized("User does not have the required role.");
+                                return Content(HttpStatusCode.Unauthorized, new { Message = "User does not have the required role." });
+                            }
+
+                        }
+                        else
+                        {
+                            // Return a not found response if the user does not exist
+                           //return NotFound("User not found.");
+                            return Content(HttpStatusCode.NotFound, new { Message = $"User not found" });
                         }
 
                     }
 
                 }
             }
-            catch (Exception x)
+            catch (Exception ex)
             {
-                throw x.InnerException;
+                // throw x.InnerException;
+                // Log the exception for debugging
+                Console.WriteLine("Exception: " + ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Inner Exception: " + ex.InnerException.Message);
+                }
+                return InternalServerError(ex);
             }
 
-            return StatusCode(HttpStatusCode.NoContent);
+            //return StatusCode(HttpStatusCode.NoContent);
+            return InternalServerError(new Exception("An error occurred while processing the request. Please try again later."));
         }
 
 

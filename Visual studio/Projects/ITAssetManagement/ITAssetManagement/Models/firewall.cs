@@ -25,10 +25,14 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string comments { get; set; }
 
+        public string Processors { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
+
         public int status_id { get; set; }
 
-        [MaxLength]
-        public string invoice { get; set; }
+        public string Invoice { get; set; }
 
         [MaxLength]
         public string attachment { get; set; }

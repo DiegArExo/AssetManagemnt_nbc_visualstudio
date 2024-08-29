@@ -10,7 +10,6 @@ namespace ITAssetManagement.Models
     {
         public int id { get; set; }
 
-        [Required]
         [StringLength(255)]
         public string brand_name { get; set; }
 
@@ -26,13 +25,16 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string model { get; set; }
 
+        public string Processors { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
+
         [StringLength(255)]
         public string comments { get; set; }
 
-        [MaxLength]
         public string invoice { get; set; }
 
-        [MaxLength]
         public string attachment { get; set; }
 
         public int status_id { get; set; }

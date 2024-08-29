@@ -19,6 +19,9 @@ namespace ITAssetManagement.Models
         public virtual DbSet<sign_out_desktop_monitor> sign_out_desktop_monitor { get; set; }
         public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; }
 
+        public virtual DbSet<role> roles { get; set; }
+        public virtual DbSet<trailing_roles> trailing_roles { get; set; }
+
         public virtual DbSet<assigned_desktops> assigned_desktops { get; set; }
         public virtual DbSet<assigned_laptops> assigned_laptops { get; set; }
         public virtual DbSet<assigned_sdwans> assigned_sdwans { get; set; }
@@ -62,6 +65,10 @@ namespace ITAssetManagement.Models
                 .Property(e => e.comments)
                 .IsUnicode(false);
 
+            modelBuilder.Entity<firewall>()
+              .Property(e => e.Processors)
+              .IsUnicode(false);
+
             modelBuilder.Entity<router_mtc>()
                 .Property(e => e.tag_number)
                 .IsUnicode(false);
@@ -102,6 +109,11 @@ namespace ITAssetManagement.Models
                 .Property(e => e.comments)
                 .IsUnicode(false);
 
+
+            modelBuilder.Entity<sdwan_laptops>()
+                .Property(e => e.Processors)
+                .IsUnicode(false);
+
             modelBuilder.Entity<sdwan>()
                 .Property(e => e.description)
                 .IsUnicode(false);
@@ -123,6 +135,9 @@ namespace ITAssetManagement.Models
 
             modelBuilder.Entity<desktop_cpus>()
                 .Property(e => e.comments)
+                .IsUnicode(false);
+             modelBuilder.Entity<desktop_cpus>()
+                .Property(e => e.Processors)
                 .IsUnicode(false);
 
            
@@ -146,8 +161,6 @@ namespace ITAssetManagement.Models
             modelBuilder.Entity<desktop_monitors>()
                 .Property(e => e.comments)
                 .IsUnicode(false);
-
-           
 
             modelBuilder.Entity<device_status>()
                 .Property(e => e.name)
@@ -175,11 +188,20 @@ namespace ITAssetManagement.Models
                 .Property(e => e.model)
                 .IsUnicode(false);
 
+            
+            modelBuilder.Entity<laptop>()
+                .Property(e => e.Processors)
+                .IsUnicode(false);
+
             modelBuilder.Entity<laptop>()
                 .Property(e => e.comments)
                 .IsUnicode(false);
 
-           
+            modelBuilder.Entity<laptop>()
+               .Property(e => e.Processors)
+               .IsUnicode(false);
+
+
 
             modelBuilder.Entity<loaned_laptops>()
                 .Property(e => e.descriptions)
@@ -217,8 +239,36 @@ namespace ITAssetManagement.Models
                 .Property(e => e.email)
                 .IsUnicode(false);
 
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_status)
+                .IsUnicode(false);
 
-            
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_department)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_section)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_position)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_office_number)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_office_extention)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<user>()
+                .Property(e => e.emp_cellphone)
+                .IsUnicode(false);
+
+
+
         }
     }
 }

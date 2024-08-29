@@ -20,7 +20,12 @@ namespace ITAssetManagement.Models
 
         [Required]
         [StringLength(255)]
-        public string model { get; set; }
+        public string model { get; set; } 
+
+        public string Processors { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
 
         [StringLength(255)]
         public string comments { get; set; }
@@ -28,14 +33,14 @@ namespace ITAssetManagement.Models
         public int status_id { get; set; }
 
         public string invoices { get; set; }
-
+        [MaxLength]
         public string attachment { get; set; }
 
         public int user_created { get; set; }
 
         public int user_updated { get; set; }
 
-        public DateTime date_created { get; set; }
+        public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
     }

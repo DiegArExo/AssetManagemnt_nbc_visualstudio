@@ -8,8 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class desktop_cpus
     {
-         
-
         public int id { get; set; }
 
         [Required]
@@ -28,6 +26,11 @@ namespace ITAssetManagement.Models
         [StringLength(50)]
         public string cpu_tag_number { get; set; }
 
+        public string Processors { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
+
         [Column(TypeName = "text")]
         public string comments { get; set; }
 
@@ -36,7 +39,7 @@ namespace ITAssetManagement.Models
 
         public int status_id { get; set; }
 
-        public int user_assigned_id { get; set; }
+        public int? user_assigned_id { get; set; }
 
         public int user_created { get; set; }
 
@@ -46,6 +49,6 @@ namespace ITAssetManagement.Models
 
         public DateTime? date_updated { get; set; }
 
-       
+  
     }
 }

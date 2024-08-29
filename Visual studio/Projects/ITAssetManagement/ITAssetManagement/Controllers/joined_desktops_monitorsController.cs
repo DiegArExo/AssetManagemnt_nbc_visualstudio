@@ -41,6 +41,7 @@ namespace ITAssetManagement.Controllers
 
         //---------------------------------- GET: api/joined_desktops_monitors/5(GET A SPECIFIC)----------------------------------
         [ResponseType(typeof(joined_desktops_monitors))]
+        [HttpGet]
         public IHttpActionResult Getjoined_desktops_monitors(int id, string token)
         {
             try { 
@@ -68,8 +69,9 @@ namespace ITAssetManagement.Controllers
 
         //------------------------------------ PUT UNASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO ZERO(0)--------------------------------------------------
         [ResponseType(typeof(void))]
-        [Route("api/joined_desktops_monitors/update_monitor")]
-        public IHttpActionResult Putjoined_desktops_monitor(int id, joined_desktops_monitors joined_desktops_monitors, string token)
+        [HttpPut]
+        [Route("api/joined_desktops_monitors/unassign_monitor_from_user")]
+        public IHttpActionResult Putjoined_desktops_monitor(int id, joined_desktops_monitors joined_desktops_monitors, int Unassign_monitor_id, string token)
         {
             // Validate the token
             if (validate_token(token))
@@ -88,16 +90,38 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });
             }
 
+            // Get the desktop_monitor_id and save it
+            int? desktopMonitorId = existingJoinedDesktopsMonitors.desktop_monitor_id;
+            var desktopMonitor = db.desktop_monitors.Find(desktopMonitorId);
+            if (desktopMonitor == null)
+            {
+                return Content(HttpStatusCode.NotFound, new { Message = $"Monitor with ID {desktopMonitor} not found." });
+            }
+            desktopMonitor.status_id = 1;
+            db.Entry(desktopMonitor).State = EntityState.Modified;
+            db.SaveChanges();
+
             // Check if desktop_monitor_id already exists
-            var monitorExists = db.joined_desktops_monitors.Any(jdm => jdm.desktop_monitor_id == joined_desktops_monitors.desktop_monitor_id && jdm.id != id);
+            var monitorExists = db.joined_desktops_monitors
+                .Where(jdm => jdm.desktop_monitor_id != 0) 
+                .Any(jdm => jdm.desktop_monitor_id == joined_desktops_monitors.desktop_monitor_id && jdm.id != id);
             if (monitorExists)
             {
                 return Content(HttpStatusCode.Conflict, new { Message = "A record with the same desktop_monitor_id already exists." });
             }
 
-            existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
+            //Get authernticated user id and save it
+            int? authenticatedUserId = GetUserIdFromToken(token);
+            if (authenticatedUserId.HasValue)
+            {
+                existingJoinedDesktopsMonitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+            }
 
-            db.Entry(existingJoinedDesktopsMonitors).State = EntityState.Modified;
+            if (existingJoinedDesktopsMonitors.desktop_monitor_id == Unassign_monitor_id) {
+                existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
+
+                db.Entry(existingJoinedDesktopsMonitors).State = EntityState.Modified;
+            }
 
             try
             {
@@ -132,6 +156,7 @@ namespace ITAssetManagement.Controllers
         //------------------------------------ PUT ASSIGNING A MONITOR FROM THE JOINED TABLE: WE UPDATE THE MONITOR ID TO THE GIVEN MONITOR ID--------------------------------------------------
 
         [ResponseType(typeof(void))]
+        [HttpPut]
         [Route("api/joined_desktops_monitors/assign_monitor_to_user")]
         public IHttpActionResult Putjoined_desktops_monitor_assign(int id, SignOut_DesktopMonitor model, string token)
         {
@@ -157,13 +182,39 @@ namespace ITAssetManagement.Controllers
                     {
                         return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
                     }
+                    // Check if the desktop_monitor_id is already assigned
+                    var monitorExists = db.joined_desktops_monitors
+                        .Any(jdm => jdm.desktop_monitor_id == joined_desktops_monitors.desktop_monitor_id);// && jdm.id != id);
+                    if (monitorExists)
+                    {
+                        return Content(HttpStatusCode.Conflict, new { Message = "This monitor is already assigned to another user." });
+                    }
 
-
+                   
 
 
                     // Update the existing entity
                     existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
+                   
+                    // existingJoinedDesktopsMonitors.user_updated = joined_desktops_monitors.user_updated;
+
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        existingJoinedDesktopsMonitors.user_updated = authenticatedUserId.Value;  
+                    }
                     db.Entry(existingJoinedDesktopsMonitors).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    // change the statuis to 2 because it was assigned
+                    var desktopMonitor = db.desktop_monitors.Find(joined_desktops_monitors.desktop_monitor_id);
+                    if (desktopMonitor == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = $"Monitor with ID {joined_desktops_monitors.desktop_monitor_id} not found." });
+                    }
+                    desktopMonitor.status_id = 2;
+                    db.Entry(desktopMonitor).State = EntityState.Modified;
                     db.SaveChanges();
 
                     // Create an instance for sign_out_desktop_monitor
@@ -241,14 +292,38 @@ namespace ITAssetManagement.Controllers
                     var existingJoinedDesktopsCPU = db.joined_desktops_monitors.Find(id);
                     if (existingJoinedDesktopsCPU == null)
                     {
-                        return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
+                        return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." });  
                     }
 
-
+                    // Check if the desktop_monitor_id is already assigned
+                    var CpuExists = db.joined_desktops_monitors
+                        .Any(jdm => jdm.desktop_cpu_id == joined_desktops_monitors.desktop_cpu_id);// && jdm.id != id);
+                    if (CpuExists)
+                    {
+                        return Content(HttpStatusCode.Conflict, new { Message = "This monitor is already assigned to another user." });
+                    }
 
                     // Update the existing entity
                     existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
+
+
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        existingJoinedDesktopsCPU.user_updated = authenticatedUserId.Value;  
+                    }
                     db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    // change the statuis to 2 because it was assigned
+                    var desktopCpu = db.desktop_cpus.Find(joined_desktops_monitors.desktop_cpu_id);
+                    if (desktopCpu == null)
+                    {
+                        return Content(HttpStatusCode.NotFound, new { Message = $"CPU with ID {joined_desktops_monitors.desktop_cpu_id} not found." });
+                    }
+                    desktopCpu.status_id = 2;
+                    db.Entry(desktopCpu).State = EntityState.Modified;
                     db.SaveChanges();
 
                     // Create an instance for sign_out_desktop_cpu
@@ -300,10 +375,11 @@ namespace ITAssetManagement.Controllers
 
 
 
-        // PUT: api/joined_desktops_monitors/update_monitor/5
+        // ------------------------------ PUT: api/joined_desktops_monitors/update_monitor/5 (UNASSING CPU FROM USER)
         [ResponseType(typeof(void))]
-        [Route("api/joined_desktops_monitors/update_cpu")]
-        public IHttpActionResult Putjoined_desktops_cpu(int id, joined_desktops_monitors joined_desktops_monitors, string token)
+        [Route("api/joined_desktops_monitors/unassign_cpu_from_user")]
+        [HttpPut]
+        public IHttpActionResult Putjoined_desktops_cpu(int id, joined_desktops_monitors joined_desktops_monitors, int Unassign_cpu_id, string token)
         {
             try
             {
@@ -328,22 +404,46 @@ namespace ITAssetManagement.Controllers
                     //return NotFound();
                     return Content(HttpStatusCode.NotFound, new { Message = $"Record with ID {id} not found." }); // Return 404 Not Found with a custom message
                 }
+                // Check if desktop_monitor_id already exists
+                var cpuExists = db.joined_desktops_monitors
+                    .Where(jdm => jdm.desktop_cpu_id != 0)
+                    .Any(jdm => jdm.desktop_cpu_id == joined_desktops_monitors.desktop_cpu_id && jdm.id != id);
+                if (cpuExists)
+                {
+                    return Content(HttpStatusCode.Conflict, new { Message = "A record with the same desktop cpu id already exists." });
+                }
 
-                // Update only the fields that need to be changed
+                // Get the desktop_cpu_id and save it
+                int? desktopCpuId = existingJoinedDesktopsCPU.desktop_cpu_id;
+                var desktopCpu = db.desktop_cpus.Find(desktopCpuId);
+                if (desktopCpu == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = $"CPU with ID {desktopCpuId} not found." });
+                }
+                desktopCpu.status_id = 1;
+                db.Entry(desktopCpu).State = EntityState.Modified;
+                db.SaveChanges();
 
-                existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
 
-                // existingJoinedDesktopsMonitors.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id;
-                // existingJoinedDesktopsMonitors.desktop_monitor_id = joined_desktops_monitors.desktop_monitor_id;
-                // existingJoinedDesktopsMonitors.user_assigned_id = updatedJoinedDesktopsMonitors.user_assigned_id;
-                // existingJoinedDesktopsMonitors.user_updated = joined_desktops_monitors.user_updated;
-                // existingJoinedDesktopsMonitors.date_created = joined_desktops_monitors.date_created;
-                // existingJoinedDesktopsMonitors.date_updated = joined_desktops_monitors.date_updated;
 
-                // This code will update the date updated to the current one
-                // existingJoinedDesktopsMonitors.date_updated = DateTime.UtcNow;  
+              
 
-                db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    existingJoinedDesktopsCPU.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                if (existingJoinedDesktopsCPU.desktop_cpu_id == Unassign_cpu_id)
+                {
+                    // Update only the fields that need to be changed
+                    existingJoinedDesktopsCPU.desktop_cpu_id = joined_desktops_monitors.desktop_cpu_id; //Update it to the value coming in which is zero
+                    db.Entry(existingJoinedDesktopsCPU).State = EntityState.Modified;
+                }
+               
+
+            
 
                 //Try and Catch Error to avoid the code from crashing.
                 try
@@ -377,7 +477,7 @@ namespace ITAssetManagement.Controllers
 
         }
 
-        //---------------------------------------------------------------POST: api/joined_cpu_monitors start ------------------------------------------------
+        //---------------------------------------------------------------POST: api/joined_cpu_monitors start(Create a Desktop Station) ------------------------------------------------
         [ResponseType(typeof(joined_desktops_monitors))]
         [HttpPost]
         [Route("api/joined_desktops_monitors")]
@@ -416,7 +516,30 @@ namespace ITAssetManagement.Controllers
                         return Content(HttpStatusCode.Conflict, new { message = "Monitor was already assigned to a station." });
                     }
                 }
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    joined_desktops_monitors.user_created = authenticatedUserId.Value; // Set to authenticated user
+                    joined_desktops_monitors.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
 
+                var monitor = db.desktop_monitors.FirstOrDefault(m => m.id == joined_desktops_monitors.desktop_monitor_id);
+                if (monitor != null)
+                {
+                    monitor.status_id = 2; // Set to the appropriate status_id
+                }
+
+
+                // Update status_id in desktop_cpu table where id is cpu_id
+
+                var cpu = db.desktop_cpus.FirstOrDefault(c => c.id == joined_desktops_monitors.desktop_cpu_id);
+                if (cpu != null)
+                {
+                    cpu.status_id = 2; // Set to the appropriate status_id
+                }
+
+                joined_desktops_monitors.date_created = DateTime.Now;
                 db.joined_desktops_monitors.Add(joined_desktops_monitors);
                 db.SaveChanges();
 

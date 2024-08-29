@@ -8,8 +8,6 @@ namespace ITAssetManagement.Models
 
     public partial class laptop
     {
-        
-
         public int id { get; set; }
 
         [Required]
@@ -28,12 +26,19 @@ namespace ITAssetManagement.Models
         [StringLength(100)]
         public string model { get; set; }
 
+        public string Processors { get; set; }
+
+        [Column(TypeName = "date")]
+        public DateTime? Year { get; set; }
+
         [Column(TypeName = "text")]
         public string comments { get; set; }
 
         [MaxLength]
         public string attachment { get; set; }
 
+        [Required]
+        [StringLength(1)]
         public string type { get; set; }
 
         public int? device_status_id { get; set; }
@@ -47,7 +52,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-        
     }
 }

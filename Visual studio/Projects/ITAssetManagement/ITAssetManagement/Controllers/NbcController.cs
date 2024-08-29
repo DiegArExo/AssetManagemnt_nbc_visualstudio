@@ -23,40 +23,48 @@ namespace ITAssetManagement.Controllers
         [Route("Token Validation")]
         public Boolean validate_token(string token)
         {
-            DateTime current = DateTime.Now;
-
-            var auth = db.authentication.Where(r => r.token == token).FirstOrDefault();
-
-            if (auth != null)
+            try
             {
-                //Quarying the database to get the toke and check if it equal to the one that was provided by the user
-                // Check if token exists in database and is not expired
-                var auth1 = db.authentication.Where(r => r.token == token)
-                                           .Where(r => r.expiry_time <= current)
-                                           .FirstOrDefault();
-                if (auth1 == null)
+                DateTime current = DateTime.Now;
+
+                var auth = db.authentication.Where(r => r.token == token).FirstOrDefault();
+
+                if (auth != null)
                 {
-                    // Token exists but is expired or about to expire
-                    DateTime expire_time = DateTime.Now.AddMinutes(15);
-
-                    // Try to extend token expiration if within 15 minutes of expiry
-                    authentication extend = db.authentication.Where(r => r.token == token)
-                                                     .Where(r => r.expiry_time <= expire_time)
-                                                     .FirstOrDefault();
-                    if (extend != null)
+                    //Quarying the database to get the toke and check if it equal to the one that was provided by the user
+                    // Check if token exists in database and is not expired
+                    var auth1 = db.authentication.Where(r => r.token == token)
+                                               .Where(r => r.expiry_time <= current)
+                                               .FirstOrDefault();
+                    if (auth1 == null)
                     {
-                       extend.expiry_time = DateTime.Now.AddHours(1);
-                       // extend.expiry_time = DateTime.Now.AddMinutes(2);
+                        // Token exists but is expired or about to expire
+                        DateTime expire_time = DateTime.Now.AddMinutes(15);
 
-                        db.SaveChanges();
+                        // Try to extend token expiration if within 15 minutes of expiry
+                        authentication extend = db.authentication.Where(r => r.token == token)
+                                                         .Where(r => r.expiry_time <= expire_time)
+                                                         .FirstOrDefault();
+                        if (extend != null)
+                        {
+                            extend.expiry_time = DateTime.Now.AddHours(1);
+                            // extend.expiry_time = DateTime.Now.AddMinutes(2);
+
+                            db.SaveChanges();
+                        }
+                        return false; // Token validation failed (expired or about to expire)
                     }
-                    return false; // Token validation failed (expired or about to expire)
+                    return true; // Token is valid and not expired
                 }
-                return true; // Token is valid and not expired
+
+
+                return true; // Token does not exist in database or is invalid
             }
-
-
-            return true; // Token does not exist in database or is invalid
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as needed
+                throw new Exception("An error occurred while validating the token.", ex);
+            }
         }
 
 
@@ -77,13 +85,24 @@ namespace ITAssetManagement.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                throw;
+                throw new InvalidOperationException("An UnauthorizedAccessException", ex);
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException("An error occurred while excluding date_created.", ex);
             }
 
+        }
+        //Getting the Id of the logged in users
+        // Getting the Id of the logged-in users
+        internal int? GetUserIdFromToken(string token)
+        {
+            var authRecord = db.authentication.FirstOrDefault(a => a.token == token && a.expiry_time > DateTime.Now);
+            if (authRecord != null)
+            {
+                return authRecord.user_id;
+            }
+            return null; // Return null if no valid token is found
         }
 
     }

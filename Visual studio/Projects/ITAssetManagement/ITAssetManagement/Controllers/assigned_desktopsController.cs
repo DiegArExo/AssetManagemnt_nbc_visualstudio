@@ -79,6 +79,7 @@ namespace ITAssetManagement.Controllers
         //----------------------------------------------- GET: api/assigned_desktops/assigned_user_station/5 -----------------------------------------------
 
         [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
         [Route("api/assigned_desktops/assigned_user_station_nomonitor")]
         public IHttpActionResult GetAssigned_Station_Assigned_UserNoMonito(int assigned_user_id, string token)
         {
@@ -116,13 +117,11 @@ namespace ITAssetManagement.Controllers
             }
 
         }
-        // GET: api/assigned_desktops/assigned_user_station/5
-        /*1, This API EndPoint will Get all the user information, That have a Desktop station and have a desktop assigned to them Monitor. 
-         * 2. This users are assigned in the Assigned Table, with their stationand have a monitor assigned to them 
-          */
+        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are have been assigned a MONITOR) START----
         [ResponseType(typeof(desktop_monitors))]
-        [Route("api/assigned_desktops/assigned_user_station_with_monitor")]
-        public IHttpActionResult GetAssigned_Station_Assigned_UserWithMonitor(int assigned_user_id, string token)
+        [HttpGet]
+        [Route("api/assigned_desktops/get_assigned_user_station_with_monitor")]
+        public IHttpActionResult GetAssigned_Station_Assigned_UserWithMonitor(int assigned_user_id, int unassign_monitor_id, string token)
         {
             try
             {
@@ -140,8 +139,9 @@ namespace ITAssetManagement.Controllers
                                             join joined_desktop_cpu in db.joined_desktops_monitors
                                             on assigned.joined_desktop_monitor_cpu_id equals joined_desktop_cpu.id
 
-                                            where assigned.user_assigned_id == assigned_user_id && (joined_desktop_cpu.desktop_cpu_id != null || joined_desktop_cpu.desktop_cpu_id != 0
-                                           || joined_desktop_cpu.desktop_monitor_id != null || joined_desktop_cpu.desktop_monitor_id != 0)
+                                            where assigned.user_assigned_id == assigned_user_id && 
+                                            (joined_desktop_cpu.desktop_cpu_id != null || joined_desktop_cpu.desktop_cpu_id != 0 || joined_desktop_cpu.desktop_monitor_id != null || joined_desktop_cpu.desktop_monitor_id != 0) &&
+                                            (joined_desktop_cpu.desktop_monitor_id == unassign_monitor_id)
 
                                             select new
                                             {
@@ -159,8 +159,8 @@ namespace ITAssetManagement.Controllers
 
         }
 
-        // GET: api/assigned_desktops/assigned_user_station/5
-        /*1, This API EndPoint will Get the Joined ID (Desktop Station ID) base on the Assigned User in the Assigned Desktop Table*/
+      
+        //------------------------------------ GET: api/assigned_desktops/assigned_user_station/5( This API EndPoint will Get all the users that are have not been assigned a CPU) START----
         [ResponseType(typeof(desktop_monitors))]
         [Route("api/assigned_desktops/assigned_user_station_nocpu")]
         public IHttpActionResult GetAssigned_Station_Assigned_UserNoCPU(int assigned_user_id, string token)
@@ -200,13 +200,14 @@ namespace ITAssetManagement.Controllers
             }
 
         }
-        // GET: api/assigned_desktops/assigned_user_station/5
-        /*1, This API EndPoint will Get the Desktop Station ID  base on the Assigned User in the Assigned Desktop Table.
-         2. This will get the desktop station and the users that have a CPU assigned to them 
-         */
+        //------------------------------------ GET: api/assigned_desktops/assigned_user_station/5( This API EndPoint will Get all the users that are have not been assigned a CPU) END----
+
+
+
+        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are have been assigned a CPU) START----
         [ResponseType(typeof(desktop_monitors))]
-        [Route("api/assigned_desktops/assigned_user_station_with_cpu")]
-        public IHttpActionResult GetAssigned_Station_Assigned_UserWithCPU(int assigned_user_id, string token)
+        [Route("api/assigned_desktops/get_assigned_user_station_with_cpu")]
+        public IHttpActionResult GetAssigned_Station_Assigned_UserWithCPU(int assigned_user_id, int unassign_cpu_id, string token)
         {
             try
             {
@@ -226,9 +227,9 @@ namespace ITAssetManagement.Controllers
                                         on assigned.joined_desktop_monitor_cpu_id equals joined_desktop_cpu.id
 
                                         where assigned.user_assigned_id == assigned_user_id && (joined_desktop_cpu.desktop_cpu_id != null || joined_desktop_cpu.desktop_cpu_id != 0
-                                       || joined_desktop_cpu.desktop_monitor_id != null || joined_desktop_cpu.desktop_monitor_id != 0)
+                                       || joined_desktop_cpu.desktop_monitor_id != null || joined_desktop_cpu.desktop_monitor_id != 0) && (joined_desktop_cpu.desktop_cpu_id == unassign_cpu_id)
 
-                                        select new
+                                            select new
                                         {
                                             AssignedDesktop = assigned,
                                             User = user,
@@ -244,9 +245,14 @@ namespace ITAssetManagement.Controllers
             }
 
         }
-        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are not assigned a Monitor)
+        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are have been assigned a CPU) END----
+
+
+
+        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are not assigned a Monitor) START ---
 
         [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
         [Route("api/assigned_desktops/assigned_user_without_monitor")]
         public IHttpActionResult GetAssigned_Assigned_User_No_Monito(string token)
         {
@@ -288,6 +294,8 @@ namespace ITAssetManagement.Controllers
             }
 
         }
+
+        //------------------------------------ GET: api/assigned_desktops/5( This API EndPoint will Get all the users that are not assigned a Monitor) START ---
 
         //----------------- -------- - GET: api/assigned_desktops/5 (This API EndPoint will Get all the users that are not assigned a cpu)
 
@@ -334,8 +342,9 @@ namespace ITAssetManagement.Controllers
         }
 
 
-        //--------GETTING THE MONITOR AND THE USER IT IS ASSIGEND TOO  START -----------
+        //------------------------------------------------GETTING THE MONITOR AND THE USER IT IS ASSIGEND TOO  START ---------------------------------------------------
         [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
         [Route("api/assigned_desktops/get_monitor_infor_user_assoc")]
         public IHttpActionResult GetMonitorInforUserAssoc(int monitorId, string token)
         {
@@ -375,6 +384,7 @@ namespace ITAssetManagement.Controllers
                                           select new
                                           {
                                               joinInfo.Monitor,
+                                             
                                               joinInfo.JoinedDesktop,
                                               AssignedDesktop = assignedDesktop
                                           };
@@ -388,8 +398,10 @@ namespace ITAssetManagement.Controllers
                              from user in userGroup.DefaultIfEmpty()
                              select new
                              {
+                                 AssignedDesktop = assignedInfo.AssignedDesktop,
                                  Monitor = assignedInfo.Monitor,
-                                 User = user
+                                 User = user,
+                               //  Attachment = assignedInfo.Monitor.attachment // Assuming 'attachment' is the column name for the file
                              };
 
                 // Step 5: Handle the case where desktop_monitor_id is 0 or null
@@ -406,7 +418,8 @@ namespace ITAssetManagement.Controllers
                     return Ok(new
                     {
                         Monitor = monitor,
-                        User = "No user"
+                        User = "No user",
+                       // Attachment = monitor.attachment // Assuming 'attachment' is the column name for the file
                     });
                 }
 
@@ -418,10 +431,11 @@ namespace ITAssetManagement.Controllers
             }
 
         }
-        //--------GETTING THE MONITOR AND THE USER IT IS ASSIGEND TOO  END -----------
+        //------------------------------------------------GETTING THE MONITOR AND THE USER IT IS ASSIGEND TOO  START ---------------------------------------------------
 
-        //--------GETTING THE CPU AND THE USER IT IS ASSIGEND TOO  START -----------
+        //---------------------------------------------------------GETTING THE CPU AND THE USER IT IS ASSIGEND TOO  START -----------------------------------------------------
         [ResponseType(typeof(desktop_monitors))]
+        [HttpGet]
         [Route("api/assigned_desktops/get_cpu_infor_user_assoc")]
         public IHttpActionResult GetCPUInforUserAssoc(int CPUId, string token)
         {
@@ -467,6 +481,7 @@ namespace ITAssetManagement.Controllers
                              from user in userGroup.DefaultIfEmpty()
                              select new
                              {
+                                 AssignedDesktop = assignedInfo.AssignedDesktop,
                                  CPU = assignedInfo.CPU,
                                  User = user
                              };
@@ -498,11 +513,10 @@ namespace ITAssetManagement.Controllers
             }
 
         }
+        //---------------------------------------------------------GETTING THE CPU AND THE USER IT IS ASSIGEND TOO  END -----------------------------------------------------
 
 
 
-
-        //--------GETTING THE CPU AND THE USER IT IS ASSIGEND TOO  END -----------
         // PUT: api/assigned_desktops/5
         [ResponseType(typeof(void))]
         public IHttpActionResult Putassigned_desktops(int id, assigned_desktops assigned_desktops, string token)
@@ -552,11 +566,11 @@ namespace ITAssetManagement.Controllers
             }
         }
 
-        // POST: api/assigned_desktops
+        //-------------------------------------------------------- POST: api/assigned_desktops ASSIG A DESKTOP STATION TO A USER START -------------------------------------------------------------
         [ResponseType(typeof(assigned_desktops))]
         [HttpPost]
         [Route("api/assigned_desktops")]
-        public IHttpActionResult Postassigned_desktops(assigned_desktops assigned_desktops, string token)
+        public IHttpActionResult Postassigned_desktops(assigned_desktops assigned_desktops, int monitor_id, int cpu_id, string token)
         {
             try
             {
@@ -581,19 +595,39 @@ namespace ITAssetManagement.Controllers
                 var existingRecord = db.assigned_desktops.FirstOrDefault(x => x.joined_desktop_monitor_cpu_id == assigned_desktops.joined_desktop_monitor_cpu_id); // && x.user_assigned_id == assigned_desktops.user_assigned_id);
                 if (existingRecord != null)
                 {
-                    // Record with same desktop_monitor_id and user_assigned_id already exists
 
-                    //return StatusCode(409, "Record with same desktop monitor ID and user assigned ID already exists.");
-                    //return StatusCode(409);
-                    // Record with same desktop monitor ID and user assigned ID already exists
                     return Content(HttpStatusCode.Conflict, new { message = "Record with same desktop monitor ID and user assigned ID already exists." });
 
                 }
+
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    assigned_desktops.user_created = authenticatedUserId.Value; // Set to authenticated user
+                    assigned_desktops.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                }
+
+                // Update status_id in desktop_monitor table where id is monitor_id
+              
+                    var monitor = db.desktop_monitors.FirstOrDefault(m => m.id == monitor_id);
+                    if (monitor != null)
+                    {
+                        monitor.status_id = 2; // Set to the appropriate status_id
+                    }
+               
+
+                // Update status_id in desktop_cpu table where id is cpu_id
+               
+                    var cpu = db.desktop_cpus.FirstOrDefault(c => c.id == cpu_id);
+                    if (cpu != null)
+                    {
+                        cpu.status_id = 2; // Set to the appropriate status_id
+                    }
+               
                 db.assigned_desktops.Add(assigned_desktops);
                 db.SaveChanges();
-                //Used for returning a response with status code 201(Created) and a Location header.
-                //  return CreatedAtRoute("DefaultApi", new { id = assigned_desktops.id }, assigned_desktops);
-                // Return success response
+
                 return Content(HttpStatusCode.Created, new { message = " Desktop Assigned successfully.", assigned_desktops = assigned_desktops });
 
 
@@ -607,18 +641,18 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
             }
         }
+        //-------------------------------------------------------- POST: api/assigned_desktops ASSIG A DESKTOP STATION TO A USER END -------------------------------------------------------------
+
 
         private IHttpActionResult StatusCode(int v, string msg)
         {
             throw new NotImplementedException();
         }
-
-        //------------------------------------- DELETE(UN - Assign a Monitor)---------------------------------------------
-
+        //-------------------------------------------------------------------------------------GET ALL ASSIGNED DESKTOP STATION START----------------------------------------------------------------------------------------------------
         [ResponseType(typeof(assigned_desktops))]
-       
-        [Route("api/assigned_desktops/un_assign_desktop_from_user")]
-        public IHttpActionResult Deleteassigned_desktops(int id, string token)
+        [HttpGet]
+        [Route("api/assigned_desktops/get_all_ass_desktopStation")]
+        public IHttpActionResult CountAssignedDesktops(string token)
         {
             try
             {
@@ -627,23 +661,66 @@ namespace ITAssetManagement.Controllers
                 {
                     return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
                 }
-                assigned_desktops assigned_desktops = db.assigned_desktops.Find(id);
-                if (assigned_desktops == null)
-                {
 
-                    return Content(HttpStatusCode.NotFound, new { message = "Desktop with the provided ID was not found." });
-                }
+                // Count all records in the assigned_desktop table
+                var assignedDesktopsCount = db.assigned_desktops.Count();
 
-                db.assigned_desktops.Remove(assigned_desktops);
-                db.SaveChanges();
-
-
-                return Content(HttpStatusCode.Created, new { message = "Assigned Desktop Station has been successfully un-assigned from this user.", assigned_desktops = assigned_desktops });
+                return Ok(new { total_assigned_desktops = assignedDesktopsCount });
             }
             catch (Exception ex)
             {
-                // Log the exception details (ex) if needed
-                return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
+
+        //-------------------------------------------------------------------------------------GET ALL ASSIGNED DESKTOP STATION END----------------------------------------------------------------------------------------------------
+
+        //------------------------------------- DELETE(UN - Assign a Monitor)---------------------------------------------
+
+        [ResponseType(typeof(assigned_desktops))]
+        [HttpDelete]
+        [Route("api/assigned_desktops/un_assign_desktop_from_user")]
+        public IHttpActionResult Deleteassigned_desktops(int id, string token)
+        {
+            // Validate the token
+            if (validate_token(token))
+            {
+                return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                   
+
+                    assigned_desktops assigned_desktops = db.assigned_desktops.Find(id);
+                    if (assigned_desktops == null)
+                    {
+
+                        return Content(HttpStatusCode.NotFound, new { message = "Desktop with the provided ID was not found." });
+                    }
+
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        assigned_desktops.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
+
+                    db.assigned_desktops.Remove(assigned_desktops);
+                    db.SaveChanges();
+
+
+                    transaction.Commit();
+                    return Content(HttpStatusCode.Created, new { message = "Assigned Desktop Station has been successfully un-assigned from this user.", assigned_desktops = assigned_desktops });
+
+                }
+                catch (Exception ex)
+                {
+                    // Rollback incase of any issues in the transaction
+                    transaction.Rollback();
+                    // Log the exception details (ex) if needed
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
+                }
             }
         }
 
