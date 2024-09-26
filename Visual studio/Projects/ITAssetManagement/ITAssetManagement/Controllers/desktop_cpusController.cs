@@ -129,8 +129,9 @@ namespace ITAssetManagement.Controllers
             existingDesktopsCPU.model = desktop_cpus.model;
             existingDesktopsCPU.cpu_serial_number = desktop_cpus.cpu_serial_number;
             existingDesktopsCPU.cpu_tag_number = desktop_cpus.cpu_tag_number;
-                existingDesktopsCPU.Processors = desktop_cpus.Processors;
-                existingDesktopsCPU.Year = desktop_cpus.Year;
+            existingDesktopsCPU.Processors = desktop_cpus.Processors;
+            existingDesktopsCPU.Year = desktop_cpus.Year;
+            existingDesktopsCPU.domain_pc_name = desktop_cpus.domain_pc_name;
 
                 //Get authernticated user id and save it
                 int? authenticatedUserId = GetUserIdFromToken(token);
@@ -376,9 +377,86 @@ namespace ITAssetManagement.Controllers
         }
 
         //--------------------------------------------------------------------------------- POST: api/desktop_cpus end ---------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------- POST(REPAIR): api/desktop_cpus start ---------------------------------------------------------------------------------
+        [ResponseType(typeof(desktop_cpus))]
+        [HttpPost]
+        [Route("api/desktop_cpus/repair")]
+        public IHttpActionResult Postdesktop_cpus_repair(cpu_repair cpu_repair, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+
+
+                try
+                {
+                    // Validate the token
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+
+                    cpu_repair.date_created = DateTime.Now;
+
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        cpu_repair.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        cpu_repair.user_updated = authenticatedUserId.Value; // Set to authenticated user
+
+                    }
+
+                    db.cpu_repair.Add(cpu_repair);
+                    db.SaveChanges();
+
+                    // Update the desktop_monitors table
+                    var desktopCpu = db.desktop_cpus.SingleOrDefault(d => d.id == cpu_repair.cpu_id);
+                    if (desktopCpu != null)
+                    {
+                        desktopCpu.status_id = 11; // Set to 11 (or any field you need to update)
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        // If no matching desktop monitor is found, handle as needed (e.g., log warning)
+                        // For now, just roll back the transaction
+                        transaction.Rollback();
+                        return NotFound(); // or return a more specific message
+                    }
+
+
+                    transaction.Commit();
+
+
+
+
+                    //return CreatedAtRoute("DefaultApi", new { id = desktop_cpus.id }, desktop_cpus);
+                    return Content(HttpStatusCode.Created, new { message = "CPU Allocted for repair successfully.", assigned_desktops = cpu_repair });
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Log the exception
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving desktop CPUs information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+
+            }
+        }
+
+        //--------------------------------------------------------------------------------- POST(REPAIR): api/desktop_cpus end ---------------------------------------------------------------------------------
 
         //------------------------------------------------------ UPDATE CPU TO BE AVAILABLE START -----------------------------------------------------------------------------------------
-        
+
         [ResponseType(typeof(void))]
         [HttpPut]
         [Route("api/desktop_cpus/update_cpu_status_available/{id}")]
@@ -563,6 +641,43 @@ namespace ITAssetManagement.Controllers
 
 
         //-------------------------------------------------GET CPU INVOICE END----------------------------------------------
+
+        //-------------------------------------------------GET CPU SIGNED OUT DOCUMENT START----------------------------------------------
+        [Route("api/desktop_cpus/get_sign_out_doc")]
+        [HttpGet]
+        public IHttpActionResult GetCpuOutDoc(int cpuId, int userId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var laptopInoive = db.sign_out_desktop_cpu
+                                   .Where(cpu => cpu.desktop_cpu_id == cpuId && cpu.user_id == userId)
+                                   .OrderByDescending(sigout => sigout.date_created)
+                                    .FirstOrDefault();
+
+
+                if (laptopInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Sign out document not found." });
+                }
+
+                return Ok(laptopInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+        //-------------------------------------------------GET CPU SIGNED OUT DOCUMENT END----------------------------------------------
 
         // DELETE: api/desktop_cpus/5
         [ResponseType(typeof(desktop_cpus))]

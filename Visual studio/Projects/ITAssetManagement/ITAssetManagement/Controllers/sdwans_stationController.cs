@@ -189,5 +189,45 @@ namespace ITAssetManagement.Controllers
             }
         }
         // ------------------------------------------ API EndPoint to get a specific SD-WAN station to be assigned END--------------------------------------------
+
+
+        //-------------------------------------------------GET SDWAN SIGNED OUT DOCUMENT START----------------------------------------------
+        [Route("api/sdwan_station/get_sign_out_doc")]
+        [HttpGet]
+        public IHttpActionResult GetSdwanOutDoc(int sdwanId, int userId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var laptopInoive = db.sign_out_sdwan
+                                   .Where(sdwan => sdwan.sdwan_id == sdwanId && sdwan.user_id == userId)
+                                   .OrderByDescending(sigout => sigout.date_created)
+                                    .FirstOrDefault();
+
+
+                if (laptopInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Sign out document not found." });
+                }
+
+                return Ok(laptopInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+        //-------------------------------------------------GET SDWAN SIGNED OUT DOCUMENT END----------------------------------------------
+
     }
+
 }

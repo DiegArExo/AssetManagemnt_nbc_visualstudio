@@ -14,6 +14,9 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string brand_name { get; set; }
 
+        [StringLength(50)]
+        public string domain_pc_name { get; set; }
+
         [Required]
         [StringLength(100)]
         public string model { get; set; }
@@ -48,7 +51,6 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-  
+ 
     }
 }

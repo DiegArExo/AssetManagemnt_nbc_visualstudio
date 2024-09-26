@@ -6,27 +6,22 @@ namespace ITAssetManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class loaned_laptops
+    public partial class assigned_desktops
     {
         public int id { get; set; }
 
-        public int loaned_laptop_id { get; set; }
+        public int joined_desktop_monitor_cpu_id { get; set; }
 
-        public int user_loaned_id { get; set; }
-
-        [StringLength(255)]
-        public string descriptions { get; set; }
-
-        public DateTime? start_date { get; set; }
-
-        public DateTime? end_date { get; set; }
+        public int user_assigned_id { get; set; }
 
         public int user_created { get; set; }
 
         public int? user_updated { get; set; }
 
-        public DateTime? date_created { get; set; }
+        public DateTime? date_created { get; set; } = DateTime.MinValue;
 
         public DateTime? date_updated { get; set; }
+
+        
     }
 }

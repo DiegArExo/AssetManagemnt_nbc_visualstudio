@@ -14,6 +14,9 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string brand_name { get; set; }
 
+        [StringLength(50)]
+        public string domain_pc_name { get; set; }
+
         [Required]
         [StringLength(50)]
         public string serial_number { get; set; }

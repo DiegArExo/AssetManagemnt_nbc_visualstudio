@@ -251,6 +251,7 @@ namespace ITAssetManagement.Controllers
             existingLaptops.tag_number = laptop.tag_number;
             existingLaptops.user_updated = laptop.user_updated;
             existingLaptops.Year = laptop.Year;
+            existingLaptops.domain_pc_name = laptop.domain_pc_name;
             existingLaptops.Processors = laptop.Processors;
                 // existingLaptops.device_status_id = laptop.device_status_id;
                 if (laptop.device_status_id != null)
@@ -379,6 +380,71 @@ namespace ITAssetManagement.Controllers
         }
 
         //------------------------------------------------------ POST: (POST laptop) End----------------------------
+
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/laptop start-------------------------------------------------------
+        [ResponseType(typeof(laptop))]
+        [HttpPost]
+        [Route("api/laptop/repair")]
+        public IHttpActionResult Postlaptop_repair(laptops_repair laptops_repair, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+
+                try
+                {
+                    // Validate the token
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+                    laptops_repair.date_created = DateTime.Now;
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        laptops_repair.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        laptops_repair.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
+                    db.laptops_repair.Add(laptops_repair);
+                    db.SaveChanges();
+
+
+                    // Update the laptop table
+                    var laptops = db.laptops.SingleOrDefault(d => d.id == laptops_repair.laptop_id);
+                    if (laptops != null)
+                    {
+                        laptops.device_status_id = 11; // Set to 11 (or any field you need to update)
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                      
+                        transaction.Rollback();
+                        return NotFound(); // or return a more specific message
+                    }
+
+                    transaction.Commit();
+                    return Content(HttpStatusCode.Created, new { message = "Laptop allocted for repairs successfully.", laptops_repairs = laptops_repair });
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving desktop and monitor information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/laptop End-------------------------------------------------------
+
 
 
 
@@ -579,7 +645,6 @@ namespace ITAssetManagement.Controllers
         //------------------------------------------------------ UPDATE LAPTOP TO BE AVAILABLE END -------------------------------------------------------------------------------------------
 
         //-------------------------------------------------GET LAPTOP INVOICE START----------------------------------------------
-
         [Route("api/laptops/get_incoice")]
         [HttpGet]
         public IHttpActionResult GetLaptopAttachment(int laptopId, string token)
@@ -613,6 +678,79 @@ namespace ITAssetManagement.Controllers
 
 
         //-------------------------------------------------GET LAPTOP INVOICE END----------------------------------------------
+
+        //-------------------------------------------------GET LAPTOP SIGN OUT DOCUMENT START----------------------------------------------
+        [Route("api/laptops/get_sign_out")]
+        [HttpGet]
+        public IHttpActionResult GetLaptopSignOutDoc(int laptopId,int userId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var laptopInoive = db.sign_out_laptop
+                       .Where(signout => signout.laptop_id == laptopId && signout.user_id == userId)
+                       .OrderByDescending(invoice => invoice.date_created)
+                       .FirstOrDefault();
+
+                if (laptopInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "Sigout Document not found." });
+                }
+
+                return Ok(laptopInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+        //-------------------------------------------------GET LAPTOP SIGN OUT DOCUMENT END----------------------------------------------
+
+        //-------------------------------------------------GET LAPTOP LOAN-OUT DOCUMENT START----------------------------------------------
+        [Route("api/laptops/get_loan_out_doc")]
+        [HttpGet]
+        public IHttpActionResult GetLaptopLoanOutDoc(int laptopId, int userId, string token)
+        {
+
+            try
+            {
+                // Validate the token
+                if (validate_token(token))
+                {
+                    return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                }
+                var laptopInoive = db.loan_out_laptop
+                                   .Where(loan_outId => loan_outId.laptop_id == laptopId && loan_outId.user_id == userId)
+                                   .OrderByDescending(sigout => sigout.date_created)
+                                    .FirstOrDefault();
+ 
+
+                if (laptopInoive == null)
+                {
+                    return Content(HttpStatusCode.NotFound, new { Message = "loan out document not found." });
+                }
+
+                return Ok(laptopInoive);
+
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while retrieving the attachment.", Details = ex.Message });
+            }
+
+        }
+
+
+        //-------------------------------------------------GET LAPTOP LOAN-OUT DOCUMENT END----------------------------------------------
 
         // DELETE: api/laptops/5
         [ResponseType(typeof(laptop))]

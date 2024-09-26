@@ -151,8 +151,9 @@ namespace ITAssetManagement.Controllers
             existingsdwanlaptop.serial_number = sdwan_laptops.serial_number;
             existingsdwanlaptop.tag_number = sdwan_laptops.tag_number;
             existingsdwanlaptop.model = sdwan_laptops.model;
-                existingsdwanlaptop.Processors = sdwan_laptops.Processors;
-                existingsdwanlaptop.Year = sdwan_laptops.Year;
+            existingsdwanlaptop.domain_pc_name = sdwan_laptops.domain_pc_name;
+            existingsdwanlaptop.Processors = sdwan_laptops.Processors;
+            existingsdwanlaptop.Year = sdwan_laptops.Year;
 
                 int? authenticatedUserId = GetUserIdFromToken(token);
                 if (authenticatedUserId.HasValue)
@@ -319,6 +320,74 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while processing sdwan.", Details = ex.Message });
             }
         }
+        //--------------------------------------------- api/sdwan_laptop/write_off/update/{id} (WRITEOFF SDWAN LAPTOP END)----------------------------------------------
+
+
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_laptops start-------------------------------------------------------
+        [ResponseType(typeof(sdwan_laptops))]
+        [HttpPost]
+        [Route("api/sdwan_laptops/repair")]
+        public IHttpActionResult PostSdwan_laptop_repair(sdwan_laptop_repair sdwan_laptop_repair, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+
+                try
+                {
+                    // Validate the token
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+                    sdwan_laptop_repair.date_created = DateTime.Now;
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        sdwan_laptop_repair.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        sdwan_laptop_repair.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
+                    db.sdwan_laptop_repair.Add(sdwan_laptop_repair);
+                    db.SaveChanges();
+
+
+                    // Update the laptop table
+                    var sdwanlaptops = db.sdwan_laptops.SingleOrDefault(d => d.id == sdwan_laptop_repair.sdwan_laptop_id);
+                    if (sdwanlaptops != null)
+                    {
+                        sdwanlaptops.status_id = 11; // Set to 11 (or any field you need to update)
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+
+                        transaction.Rollback();
+                        return NotFound(); // or return a more specific message
+                    }
+
+                    transaction.Commit();
+                    return Content(HttpStatusCode.Created, new { message = "Laptop allocted for repairs successfully.", sdwan_laptop_repair = sdwan_laptop_repair });
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving desktop and monitor information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_laptops End-------------------------------------------------------
+
+
 
 
         //------------------------------------------------------ UPDATE SDWAN LAPTOP TO BE AVAILABLE START -----------------------------------------------------------------------------------------

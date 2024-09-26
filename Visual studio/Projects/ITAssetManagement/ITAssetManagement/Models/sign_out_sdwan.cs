@@ -6,20 +6,16 @@ namespace ITAssetManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class loaned_laptops
+    public partial class sign_out_sdwan
     {
         public int id { get; set; }
 
-        public int loaned_laptop_id { get; set; }
+        public int sdwan_id { get; set; }
 
-        public int user_loaned_id { get; set; }
+        public int user_id { get; set; }
 
-        [StringLength(255)]
-        public string descriptions { get; set; }
-
-        public DateTime? start_date { get; set; }
-
-        public DateTime? end_date { get; set; }
+        [Required]
+        public string signout_document { get; set; }
 
         public int user_created { get; set; }
 

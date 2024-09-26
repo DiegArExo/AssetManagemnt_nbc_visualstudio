@@ -13,6 +13,9 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string brand_name { get; set; }
 
+        [StringLength(50)]
+        public string domain_pc_name { get; set; }
+
         [Required]
         [StringLength(255)]
         public string serial_number { get; set; }
@@ -33,8 +36,10 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string comments { get; set; }
 
+        [MaxLength]
         public string invoice { get; set; }
 
+        [MaxLength]
         public string attachment { get; set; }
 
         public int status_id { get; set; }

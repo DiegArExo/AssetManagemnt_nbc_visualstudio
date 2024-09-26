@@ -14,6 +14,10 @@ namespace ITAssetManagement.Models
 
         public int user_assigned_id { get; set; }
 
+        public DateTime? start_date { get; set; }
+
+        public DateTime? end_date { get; set; }
+
         public int user_created { get; set; }
 
         public int? user_updated { get; set; }
@@ -21,7 +25,5 @@ namespace ITAssetManagement.Models
         public DateTime? date_created { get; set; }
 
         public DateTime? date_updated { get; set; }
-
-       
     }
 }

@@ -264,12 +264,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\assigned_desktops.cs" />
+    <Compile Include="Models\fonts\assigned_desktops.cs" />
     <Compile Include="Models\assigned_laptops.cs" />
     <Compile Include="Models\assigned_sdwans.cs" />
     <Compile Include="Models\authentication.cs" />
     <Compile Include="Models\CpuInvoiceModel.cs" />
     <Compile Include="Models\cpu_invoice.cs" />
+    <Compile Include="Models\cpu_repair.cs" />
     <Compile Include="Models\desktop_cpus.cs" />
     <Compile Include="Models\desktop_monitors.cs" />
     <Compile Include="Models\device_status.cs" />
@@ -279,6 +280,7 @@
     <Compile Include="Models\laptop.cs" />
     <Compile Include="Models\LaptopInvoiceModel.cs" />
     <Compile Include="Models\LaptopSignOut.cs" />
+    <Compile Include="Models\laptops_repair.cs" />
     <Compile Include="Models\laptop_invoice.cs" />
     <Compile Include="Models\loaned_laptops.cs" />
     <Compile Include="Models\loaned_sdwans.cs" />
@@ -286,15 +288,21 @@
     <Compile Include="Models\loan_out_laptop.cs" />
     <Compile Include="Models\MonitoInvoiceModel.cs" />
     <Compile Include="Models\monitor_invoice.cs" />
+    <Compile Include="Models\monitor_repair.cs" />
     <Compile Include="Models\role.cs" />
     <Compile Include="Models\router_mtc.cs" />
     <Compile Include="Models\sdwan.cs" />
+    <Compile Include="Models\sdwan_firewall_repair.cs" />
     <Compile Include="Models\sdwan_laptops.cs" />
+    <Compile Include="Models\sdwan_laptop_repair.cs" />
+    <Compile Include="Models\sdwan_router_repair.cs" />
+    <Compile Include="Models\SignOut_SDWAN.cs" />
     <Compile Include="Models\SignOut_DesktopMonitor.cs" />
     <Compile Include="Models\SignOut_Desktop_CpuModel.cs" />
     <Compile Include="Models\sign_out_desktop_cpu.cs" />
     <Compile Include="Models\sign_out_desktop_monitor.cs" />
     <Compile Include="Models\sign_out_laptop.cs" />
+    <Compile Include="Models\sign_out_sdwan.cs" />
     <Compile Include="Models\trailing_assigned_desktops.cs" />
     <Compile Include="Models\trailing_assigned_laptops.cs" />
     <Compile Include="Models\trailing_assigned_sdwans.cs" />

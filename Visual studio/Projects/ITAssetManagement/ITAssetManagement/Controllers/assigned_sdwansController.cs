@@ -61,7 +61,7 @@ namespace ITAssetManagement.Controllers
                     return NotFound();
                 }
 
- 
+
                 return Ok(assigned_sdwans);
             }
             catch (Exception ex)
@@ -82,29 +82,29 @@ namespace ITAssetManagement.Controllers
                     return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
                 }
 
-         
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
-               
+
                 if (id != assigned_sdwans.id)
                 {
                     return BadRequest("ID mismatch between URL and data.");
                 }
 
-                
+
                 db.Entry(assigned_sdwans).State = EntityState.Modified;
 
                 try
                 {
-                     
+
                     db.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                     
+
                     if (!assigned_sdwansExists(id))
                     {
                         return NotFound();
@@ -122,10 +122,125 @@ namespace ITAssetManagement.Controllers
                 // Handle unexpected exceptions
                 return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while updating assigned_sdwans data.", Details = ex.Message });
             }
-           
+
+
         }
 
-        // POST: api/assigned_sdwans
+        // POST: api/assigned_sdwans) Assigining a SDWAN Device to a User ----- START
+        [ResponseType(typeof(assigned_sdwans))]
+        [HttpPost]
+        [Route("api/assigned_sdwans")]
+        public IHttpActionResult Postassigned_sdwans(SignOut_SDWAN model, string token)
+        {
+            // Validate the token
+            if (validate_token(token))
+            {
+                return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    if (model == null)
+                    {
+                        return Content(HttpStatusCode.BadRequest, new { message = "The model cannot be null." });
+                    }
+
+                    var assigned_sdwans = model.Sign_out_Sdwan;
+                    if (assigned_sdwans == null)
+                    {
+                        return Content(HttpStatusCode.BadRequest, new { message = "The assigned SDWAN object cannot be null." });
+                    }
+
+                    // Check if the sdwan_id already exists
+                    var existingSdwans = db.assigned_sdwans.FirstOrDefault(a => a.sdwan_id == assigned_sdwans.sdwan_id);
+                    if (existingSdwans != null)
+                    {
+                        return Content(HttpStatusCode.Conflict, new { message = "SDWAN has already been assigned." });
+                    }
+
+                    // Set date_created to current date and time
+                    assigned_sdwans.date_created = DateTime.Now;
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        assigned_sdwans.user_updated = authenticatedUserId.Value;
+                        assigned_sdwans.user_created = authenticatedUserId.Value;
+                    }
+
+                    db.assigned_sdwans.Add(assigned_sdwans);
+                    db.SaveChanges();
+
+                    // Create an instance for sign_out_sdwan
+                    var SdwanSigout = new sign_out_sdwan
+                    {
+                        sdwan_id = model.sdwan_id,
+                        signout_document = model.signout_document,
+                        user_id = model.user_id,
+                        user_created = authenticatedUserId ?? 0,
+                        date_created = DateTime.Now
+                    };
+
+                    // Save data in the sign_out_sdwan table to store the sign-out documents
+                    db.sign_out_sdwan.Add(SdwanSigout);
+                    db.SaveChanges();
+
+                    // Commit the transaction
+                    transaction.Commit();
+
+                    // Update sdwan_laptops, router_mtc, and firewalls
+                    var sdwanData = db.sdwans.FirstOrDefault(s => s.id == assigned_sdwans.sdwan_id);
+                    if (sdwanData != null)
+                    {
+                        // Update sdwan_laptops status_id to 2 making the status assigned
+                        var sdwanLaptops = db.sdwan_laptops.Where(sl => sl.id == sdwanData.sdwanlaptop_id).ToList();
+                        foreach (var laptop in sdwanLaptops)
+                        {
+                            laptop.status_id = 2;
+                        }
+
+                        // Update router_mtc status_id to 2 making the status assigned
+                        var routers = db.router_mtc.Where(r => r.id == sdwanData.router_id).ToList();
+                        foreach (var router in routers)
+                        {
+                            router.status_id = 2;
+                        }
+
+                        // Update firewalls status_id to 2 making the status assigned
+                        var firewalls = db.firewalls.Where(f => f.id == sdwanData.firewall_id).ToList();
+                        foreach (var firewall in firewalls)
+                        {
+                            firewall.status_id = 2;
+                        }
+
+                        // Save changes to the database
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        return Content(HttpStatusCode.NotFound, new { message = "SDWAN data not found." });
+                    }
+
+                    return Content(HttpStatusCode.Created, new { message = "SDWAN Assigned successfully.", assigned_sdwans = assigned_sdwans });
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    string errorDetails = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                    return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned SDWAN.", error = errorDetails });
+                }
+            }
+        }
+
+        // POST: api/assigned_sdwans) Assigining a SDWAN Device to a User ----- END
+
+        /*// POST: api/assigned_sdwans) Assigining a SDWAN Device to a User ----- START
         [ResponseType(typeof(assigned_sdwans))]
         [HttpPost]
         [Route("api/assigned_sdwans")]
@@ -205,6 +320,9 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { message = "An error occurred while creating the assigned desktop.", error = ex.Message });
             }
         }
+        // POST: api/assigned_sdwans) Assigining a SDWAN Device to a User ----- END*/
+
+
 
         //-------------------------------------------- DELETE: un- Assign SDWAN ------------------------------------------------------
         [ResponseType(typeof(assigned_sdwans))]

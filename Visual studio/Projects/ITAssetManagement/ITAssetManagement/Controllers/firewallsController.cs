@@ -331,6 +331,73 @@ namespace ITAssetManagement.Controllers
                 return InternalServerError(new Exception("An unexpected error occurred.", ex));
             }
         }
+        //--------------------------------------------- POST: api/firewalls(POST SDWAN firewall Informarion )---------------------------------------------
+
+
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_firewall_repair start-------------------------------------------------------
+        [ResponseType(typeof(sdwan_firewall_repair))]
+        [HttpPost]
+        [Route("api/sdwan_firewall_repair/repair")]
+        public IHttpActionResult PostSdwan_firewall_repair(sdwan_firewall_repair sdwan_firewall_repair, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+
+                try
+                {
+                    // Validate the token
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+                    sdwan_firewall_repair.date_created = DateTime.Now;
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        sdwan_firewall_repair.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        sdwan_firewall_repair.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
+                    db.sdwan_firewall_repair.Add(sdwan_firewall_repair);
+                    db.SaveChanges();
+
+
+                    // Update the laptop table
+                    var sdwanFirewall = db.firewalls.SingleOrDefault(d => d.id == sdwan_firewall_repair.sdwan_firewall_id);
+                    if (sdwanFirewall != null)
+                    {
+                        sdwanFirewall.status_id = 11; // Set to 11 (or any field you need to update)
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+
+                        transaction.Rollback();
+                        return NotFound(); // or return a more specific message
+                    }
+
+                    transaction.Commit();
+                    return Content(HttpStatusCode.Created, new { message = "Firewall allocted for repairs successfully.", sdwan_firewall_repairs = sdwan_firewall_repair });
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving Firewall information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_firewall_repair End-------------------------------------------------------
+
         //------------------------------------------------------ UPDATE SDWAN FIREWALL TO BE AVAILABLE START -----------------------------------------------------------------------------------------
         [ResponseType(typeof(void))]
         [HttpPut]

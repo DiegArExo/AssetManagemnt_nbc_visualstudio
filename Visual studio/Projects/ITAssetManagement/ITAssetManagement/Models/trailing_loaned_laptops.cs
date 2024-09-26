@@ -17,6 +17,10 @@ namespace ITAssetManagement.Models
         [StringLength(255)]
         public string descriptions { get; set; }
 
+        public DateTime? start_date { get; set; }
+
+        public DateTime? end_date { get; set; }
+
         public int user_created { get; set; }
 
         public int? user_updated { get; set; }

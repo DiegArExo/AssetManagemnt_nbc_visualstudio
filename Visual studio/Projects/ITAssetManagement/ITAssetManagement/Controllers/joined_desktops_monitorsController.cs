@@ -97,7 +97,7 @@ namespace ITAssetManagement.Controllers
             {
                 return Content(HttpStatusCode.NotFound, new { Message = $"Monitor with ID {desktopMonitor} not found." });
             }
-            desktopMonitor.status_id = 1;
+            desktopMonitor.status_id = 1; //add 1 to make it available
             db.Entry(desktopMonitor).State = EntityState.Modified;
             db.SaveChanges();
 

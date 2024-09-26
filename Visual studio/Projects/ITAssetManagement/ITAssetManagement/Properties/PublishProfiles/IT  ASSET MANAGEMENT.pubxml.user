@@ -124,7 +124,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>08/16/2013 10:57:12</publishTime>
     </File>
     <File Include="bin/ITAssetManagement.dll">
-      <publishTime>07/22/2024 13:47:14</publishTime>
+      <publishTime>08/16/2024 13:49:02</publishTime>
     </File>
     <File Include="bin/ja/Microsoft.Data.Edm.resources.dll">
       <publishTime>08/16/2013 10:43:10</publishTime>
@@ -382,7 +382,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>05/22/2024 16:34:36</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>07/19/2024 16:44:01</publishTime>
+      <publishTime>08/16/2024 13:49:02</publishTime>
     </File>
   </ItemGroup>
 </Project>

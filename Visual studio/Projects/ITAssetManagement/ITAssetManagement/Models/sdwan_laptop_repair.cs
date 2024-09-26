@@ -6,24 +6,23 @@ namespace ITAssetManagement.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    public partial class trailing_assigned_sdwans
+    public partial class sdwan_laptop_repair
     {
         public int id { get; set; }
 
-        public int sdwan_id { get; set; }
+        public int? sdwan_laptop_id { get; set; }
 
-        public int user_assigned_id { get; set; }
+        [Column(TypeName = "text")]
+        public string comment { get; set; }
+        [MaxLength]
+        public string attachment { get; set; }
 
-        public DateTime? start_date { get; set; }
-
-        public DateTime? end_date { get; set; }
-
-        public int user_created { get; set; }
+        public int? user_created { get; set; }
 
         public int? user_updated { get; set; }
 
-        public DateTime? date_created { get; set; }
-
         public DateTime? date_updated { get; set; }
+
+        public DateTime? date_created { get; set; }
     }
 }

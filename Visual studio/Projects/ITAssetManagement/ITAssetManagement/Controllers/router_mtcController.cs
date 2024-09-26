@@ -328,6 +328,73 @@ namespace ITAssetManagement.Controllers
                 return Content(HttpStatusCode.InternalServerError, new { message = "An unexpected error occurred.", details = ex.Message });
             }
         }
+        //--------------------------------------------- // POST: api/router_mtc (UPDATE)----------------------------------------------
+
+
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_router_repair start-------------------------------------------------------
+        [ResponseType(typeof(sdwan_router_repair))]
+        [HttpPost]
+        [Route("api/sdwan_router_repair/repair")]
+        public IHttpActionResult PostSdwan_router_repair(sdwan_router_repair sdwan_router_repair, string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            using (var transaction = db.Database.BeginTransaction())
+            {
+
+                try
+                {
+                    // Validate the token
+                    if (validate_token(token))
+                    {
+                        return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+                    }
+
+                    sdwan_router_repair.date_created = DateTime.Now;
+                    //Get authernticated user id and save it
+                    int? authenticatedUserId = GetUserIdFromToken(token);
+                    if (authenticatedUserId.HasValue)
+                    {
+                        sdwan_router_repair.user_created = authenticatedUserId.Value; // Set to authenticated user
+                        sdwan_router_repair.user_updated = authenticatedUserId.Value; // Set to authenticated user
+                    }
+                    db.sdwan_router_repair.Add(sdwan_router_repair);
+                    db.SaveChanges();
+
+
+                    // Update the laptop table
+                    var sdwanRouter = db.router_mtc.SingleOrDefault(d => d.id == sdwan_router_repair.sdwan_router_id);
+                    if (sdwanRouter != null)
+                    {
+                        sdwanRouter.status_id = 11; // Set to 11 (or any field you need to update)
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+
+                        transaction.Rollback();
+                        return NotFound(); // or return a more specific message
+                    }
+
+                    transaction.Commit();
+                    return Content(HttpStatusCode.Created, new { message = "Router allocted for repairs successfully.", sdwan_router_repairs = sdwan_router_repair });
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.InnerException;
+                    return InternalServerError(new Exception("An error occurred while saving Router information.", innerException ?? ex));
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return InternalServerError(new Exception("An unexpected error occurred.", ex));
+                }
+            }
+        }
+        //------------------------------------------------------------------------------------------------POST(REPAIR): api/sdwan_router_repair End-------------------------------------------------------
+
         //------------------------------------------------------ UPDATE SDWAN ROUTER TO BE AVAILABLE START -----------------------------------------------------------------------------------------
         [ResponseType(typeof(void))]
         [HttpPut]

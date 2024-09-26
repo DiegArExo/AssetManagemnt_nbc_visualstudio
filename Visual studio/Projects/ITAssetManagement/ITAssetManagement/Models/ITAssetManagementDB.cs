@@ -17,7 +17,8 @@ namespace ITAssetManagement.Models
         public virtual DbSet<monitor_invoice> monitor_invoice { get; set; }
         public virtual DbSet<sign_out_desktop_cpu> sign_out_desktop_cpu { get; set; }
         public virtual DbSet<sign_out_desktop_monitor> sign_out_desktop_monitor { get; set; }
-        public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; }
+        public virtual DbSet<sign_out_laptop> sign_out_laptop { get; set; } 
+        public virtual DbSet<sign_out_sdwan> sign_out_sdwan { get; set; }
 
         public virtual DbSet<role> roles { get; set; }
         public virtual DbSet<trailing_roles> trailing_roles { get; set; }
@@ -44,7 +45,16 @@ namespace ITAssetManagement.Models
         public virtual DbSet<trailing_joined_desktops_monitors> trailing_joined_desktops_monitors { get; set; }
         public virtual DbSet<trailing_loaned_laptops> trailing_loaned_laptops { get; set; }
         public virtual DbSet<trailing_loaned_sdwans> trailing_loaned_sdwans { get; set; }
+        public virtual DbSet<cpu_repair> cpu_repair { get; set; }
+        public virtual DbSet<monitor_repair> monitor_repair { get; set; }
         public virtual DbSet<user> users { get; set; }
+
+        public virtual DbSet<laptops_repair> laptops_repair { get; set; }
+        public virtual DbSet<sdwan_firewall_repair> sdwan_firewall_repair { get; set; }
+        public virtual DbSet<sdwan_laptop_repair> sdwan_laptop_repair { get; set; }
+        public virtual DbSet<sdwan_router_repair> sdwan_router_repair { get; set; }
+
+
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -267,6 +277,34 @@ namespace ITAssetManagement.Models
                 .Property(e => e.emp_cellphone)
                 .IsUnicode(false);
 
+
+            modelBuilder.Entity<cpu_repair>()
+              .Property(e => e.comment)
+              .IsUnicode(false);
+
+            modelBuilder.Entity<cpu_repair>()
+                .Property(e => e.attachment)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<monitor_repair>()
+                .Property(e => e.comment)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<laptops_repair>()
+               .Property(e => e.comment)
+               .IsUnicode(false);
+
+            modelBuilder.Entity<sdwan_firewall_repair>()
+                .Property(e => e.comment)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<sdwan_laptop_repair>()
+                .Property(e => e.comment)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<sdwan_router_repair>()
+                .Property(e => e.comment)
+                .IsUnicode(false);
 
 
         }
