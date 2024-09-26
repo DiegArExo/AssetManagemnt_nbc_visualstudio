@@ -312,3 +312,4 @@ Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hans\System
 Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\bin\zh-Hant\System.Spatial.resources.dll
 Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Debug\ITAssetManagement.dll
 Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Debug\ITAssetManagement.pdb
+Z:\Visual studio\Projects\ITAssetManagement\ITAssetManagement\obj\Debug\ITAssetManagement.csprojResolveAssemblyReference.cache

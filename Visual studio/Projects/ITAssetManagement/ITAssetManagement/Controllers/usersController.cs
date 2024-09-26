@@ -81,6 +81,68 @@ namespace ITAssetManagement.Controllers
             }
         }
 
+
+        // ------- ------------------------GET: api/users.( POST CREATE A USER) ------------------------------------------------------------
+        [ResponseType(typeof(user))]
+        [HttpPost]
+        [Route("api/users_post")]
+        public IHttpActionResult Postuser(user user, string token)
+        {
+            if (validate_token(token))
+            {
+                return Content(HttpStatusCode.Unauthorized, new { Message = "Unauthorized access. Token validation failed." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Content(HttpStatusCode.BadRequest, new { Message = "Invalid model state.", ModelState = ModelState });
+            }
+
+            if (validate_token(token))
+            {
+                return Content(HttpStatusCode.Unauthorized, new { Message = "Invalid or expired token." });
+            }
+
+            try
+            {
+                var existingUser = db.users.FirstOrDefault(r => r.username == user.username);
+                if (existingUser != null)
+                {
+                    return Content(HttpStatusCode.Conflict, new { Message = $"Username '{user.username}' already exists." });
+                }
+                var existingUser_email = db.users.FirstOrDefault(r => r.email == user.email);
+                if (existingUser_email != null)
+                {
+                    return Content(HttpStatusCode.Conflict, new { Message = $"Email '{user.email}' already exists." });
+                }
+
+                //insert current time.
+                user.date_created = DateTime.Now;
+                //Get authernticated user id and save it
+                int? authenticatedUserId = GetUserIdFromToken(token);
+                if (authenticatedUserId.HasValue)
+                {
+                    user.user_created = authenticatedUserId.Value;
+                    user.user_updated = authenticatedUserId.Value;
+                }
+
+                db.users.Add(user);
+                db.SaveChanges();
+
+                return Content(HttpStatusCode.Created, new { message = "User created successfully.", user = user });
+            }
+            catch (DbUpdateException ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "A database update error occurred while creating the user.", Details = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new { Message = "An error occurred while creating the user.", Details = ex.Message });
+            }
+
+            return CreatedAtRoute("DefaultApi", new { id = user.id }, new { Message = "User created successfully.", Data = user });
+        }
+        // ------- ------------------------GET: api/users.( POST CREATE A USER) ------------------------------------------------------------
         //-----------------------------------------------PUT: api/users/5 (UPDATE SPECIFIC USER END)---------------------------------------------------------
         //[ResponseType(typeof(user))]
         //public IHttpActionResult Putuser(int id, user user, string token)
@@ -205,7 +267,7 @@ namespace ITAssetManagement.Controllers
         [ResponseType(typeof(user))]
         [HttpGet]
         [Route("api/users/{id}")]
-        public IHttpActionResult Postuser(user user, string token)
+        public IHttpActionResult Postuser_create(user user, string token)
         {
             if (validate_token(token))
             {
